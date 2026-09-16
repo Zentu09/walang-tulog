@@ -27,11 +27,37 @@
             <div>How does Sleep Affect Academic Performance?</div>
         </div>
 
-        <div> <!-- header-->
+        <section id="performance" class="data-section">
+            <h2>Explore the Data</h2>
+            <p class="data-intro">Upload the dataset (.csv) to see it charted below.</p>
 
-        </div>
+            <div class="upload-zone" id="dropZone">
+                <label class="upload-label" for="csvInput">Choose CSV file</label>
+                <input type="file" id="csvInput" accept=".csv" />
+                <div class="upload-hint">or drag a .csv file here</div>
+                <div class="file-name" id="fileName"></div>
+            </div>
 
+            <div class="error-msg" id="errorMsg"></div>
 
+            <div class="controls" id="controls">
+                <div class="field">
+                    <label for="labelCol">Labels (x-axis)</label>
+                    <select id="labelCol"></select>
+                </div>
+                <div class="field">
+                    <label for="valueCol">Values (y-axis)</label>
+                    <select id="valueCol"></select>
+                </div>
+            </div>
 
+            <div class="chart-wrap" id="chartWrap">
+                <canvas id="chartCanvas"></canvas>
+            </div>
+        </section>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+        <script src="../JS/dataChart.js"></script>
     </body>
 </html>
