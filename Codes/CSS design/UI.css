@@ -1,0 +1,200 @@
+body {
+    margin: 0;
+}
+
+
+.ulo {
+    display: flex;
+    color: #fff;
+    align-items: center;
+    background-color: #071D5E;
+    font-size: 18px;
+    height: 80px;
+}
+
+.ulo a {
+    color: #fff;
+    text-decoration: none;    
+}
+
+nav ul {
+    color: #fff;
+  display: flex;
+  list-style: none; /* Removes bullet points */
+  margin: 0;
+  padding: 0;
+  gap: 25px; /* Creates spacing between each link item */
+  
+}
+
+/* Float Left Effect: Pushes Navigation to the left, right next to the logo */
+nav {
+    margin-left: auto;
+    margin-right: 30px;
+}
+
+.logo img {    
+    height: 70px;
+    width: auto;
+    margin-left: 20px;
+}
+
+/* 
+========================================
+            MAIN PAGE
+========================================
+*/
+
+.fa-arrow-right-long {
+    font-size: 20px;
+    margin-left: 10px;
+}
+
+.but-sel {
+    display: flex;
+    margin: 3% auto 0 5%;
+    flex-direction: row;
+    column-gap: 30px;
+}
+
+.ab-button {
+    padding: 20px 40px 20px 40px;
+    background-color: #c7d8fd;
+    color: #071D5E;
+    border: none;
+    border-radius: 40px;
+    font-size: 18px ;
+    font-weight: bold;
+}
+
+.re-button {
+    padding: 20px 30px 20px 30px;
+    background-color: #071D5E;
+    border: 2px solid #c7d8fd;
+    border-radius: 40px;
+    color: #fff;
+    font-size: 18px;
+}
+
+.main-page {
+    height: 1500px;
+}
+
+.about-study-page {
+    height: 1500px;
+}
+
+.explore {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 600px;
+    width: auto;
+    background-image: url("../css design/bg.jpg");
+    background-size: cover;
+    background-position: center;
+}
+
+.text-side {
+    display: flex;
+    flex-direction: column;    
+    justify-content: center;
+    width: 50%;
+}
+
+.text-side .te {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 60px;
+    color: #fff;
+    margin: 0 auto 0 10%;
+    width: auto;
+}
+
+.text-side .te2 {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 25px;
+    color: #fff;
+    margin: 3% auto 0 10%;
+    width: 80%;
+}
+
+.cards {
+    margin-top: 7%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 70px;
+}
+
+.ico {
+    font-size: 80px;
+    color: #4350c6;
+}
+
+.card {
+    background-color: #f3f6ff;
+    height: 250px;
+    width: 350px;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    row-gap: 15px;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.card .t {
+    color: #4543c6;;
+    font-size: 25px;
+    font-weight: bold;
+}
+
+.card .t2 {
+    color: #6a6a6a;
+    text-align: center;
+    width: 300px;
+    font-size: 18px;
+}
+
+.bott {    
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    margin: 3% auto;
+    max-width: 1920px;    
+    column-gap: 30px;
+    width: 100%;    
+ 
+    height: auto;
+    aspect-ratio: 1920 / 330; 
+    background-size: 100% 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: url("../css design/sss.png");
+}
+
+.bott .t {
+    margin-top: 2%;
+    font-size: 25px;
+    color: #071D5E;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.bott .fa-arrow-right-long {
+    margin-top: 2%;
+    color: #071D5E;
+}
+
+.fa-diamond {
+    margin-top: 2%;
+    font-size: 20px;
+    color: #071D5E;
+}
+
+
+
+
+
+

@@ -1,0 +1,31 @@
+/* 
+========================================
+            HABITS PAGE
+========================================
+*/
+.habits-page {
+    height: 1500px;
+}
+
+.sleep-hab {
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+    gap: 30px;
+}
+
+.card4 {
+    height: 400px;
+    width: 400px;
+    background-color: #E4ECFD;
+    border: 2px #c7d8fd solid;
+    border-radius: 20px;
+}
+
+.card5 {
+    height: 250px;
+    width: 400px;
+    background-color: #f7faff;
+    border: 2px #dee9ff solid;
+    border-radius: 20px; 
+}
