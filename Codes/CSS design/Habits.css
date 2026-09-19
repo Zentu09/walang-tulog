@@ -1,3 +1,5 @@
+
+
 /* 
 ========================================
             HABITS PAGE
@@ -11,21 +13,100 @@
     display: flex;
     justify-content: center;
     flex-direction: row;
-    gap: 30px;
+    gap: 50px;
 }
 
 .card4 {
-    height: 400px;
-    width: 400px;
+    margin-top: 50px; 
+    height: 300px;
+    width: 320px;
     background-color: #E4ECFD;
-    border: 2px #c7d8fd solid;
+    border: 2px #e9f0ff solid;
     border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    row-gap: 10px;
+    
 }
 
 .card5 {
-    height: 250px;
-    width: 400px;
+    margin-top: 50px; 
+    height: 260px;
+    width: 320px;
     background-color: #f7faff;
     border: 2px #dee9ff solid;
     border-radius: 20px; 
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    row-gap: 15px;
 }
+
+.fer {
+    font-size: 70px;
+    color: #1e247d;
+}
+
+.card4 .t {
+    font-weight: bold;
+    font-size: 20px;
+    color: #1e247d;
+}
+
+.card4 .t2 {
+    font-weight: bolder;
+    font-size: 30px;
+    color: #1e247d;
+    
+}
+
+.card4 .t3 {
+    color: #242863;
+    font-size: 18px;
+}
+
+.card5 .t {
+    font-weight: bold;
+    font-size: 20px;
+    color: #1e247d;
+}
+
+.card5 .t2 {
+    font-weight: bolder;
+    font-size: 30px;
+    color: #1e247d;
+    
+}
+
+.card5 .t3 {
+    color: #242863;
+    font-size: 18px;
+}
+
+.hab {    
+    margin-left: 220px;
+    color: #242863;
+    font-size: 50px; 
+    font-weight: bold;
+}
+
+.hab3 { 
+    margin-left: 220px;
+    margin-top: 100px;    
+    font-weight: bold;
+    
+    color: #242863;
+    font-size: 30px; 
+}   
+
+.hab2 {   
+    margin-top: 5px; 
+    margin-left: 220px;
+    color: #242863;
+    font-size: 20px;     
+}
+
