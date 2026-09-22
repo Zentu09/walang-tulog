@@ -10,10 +10,13 @@
         <link rel="stylesheet" href="../CSS design/UI.css">
         <link rel="stylesheet" href="../CSS design/About.css">
         <link rel="stylesheet" href="../CSS design/Habits.css">
+        <link rel="stylesheet" href="../CSS design/performance.css">
+        <link rel="stylesheet" href="../CSS design/findings.css">
+        <link rel="stylesheet" href="../CSS design/contact.css">
         <link rel="stylesheet" href="../css/all.min.css">        
     </head>
     <body>
-        <div> <!-- header-->
+        <section> <!-- header-->
                 <div class="ulo">
                     <div class="logo">
                         <img src="../CSS design/Media3.png" alt="Company Logo">
@@ -29,10 +32,10 @@
                         </ul>
                     </nav>
                 </div>
-            </div>
+        </section>
 
         <!-- Mostly done-->
-        <div class="main-page">            
+        <section class="main-page">            
             
 
             <div class="explore"> <!-- Image header-->
@@ -74,10 +77,10 @@
                 <div class="t">Brighter Future</div>
                 <i class="fa-solid fa-diamond"></i>
             </div>
-        </div>            
+        </section>            
 
         <!-- Almost -->
-        <div class="about-study-page">
+        <section class="about-study-page">
             <div class="te">About the Study</div>
             <div class="te2">Understand how sleep habits influence academic success.</div>
                     
@@ -172,10 +175,10 @@
             </div>
 
             
-        </div>
+        </section>
 
         <!-- Marami pa-->
-        <div class="habits-page">
+        <section class="habits-page">
             <div>
                 <div class="hab">Sleep Habits</div>
                 <div class="hab2">An overview of sleeping habits of the students</div>
@@ -227,22 +230,59 @@
                 </div>
             </div>
 
-        </div>
+        </section>
 
-        <!-- nonestarted -->
-        <div class="perfomance">
+        <!-- none started -->
+        <section id="performance" class="performance">
+            <h2>Academic Performance</h2>
+            <p>The academic performance levels of the respondents based on their grades.</p>
 
-        </div>
-        
+            <div class="performance-grid">
+                <div class="chart-card">
+                    <h3>GPA Range</h3>
+                    <canvas id="gpaBarChart"></canvas>
+                </div>
+
+                <div class="chart-card">
+                    <h3>Overall Performance Distribution</h3>
+                    <canvas id="gpaPieChart"></canvas>
+                </div>
+            </div>
+
+            <div class="average-grade">
+                <h3>Average Grade</h3>
+                <strong id="averageGpa">Loading...</strong>
+                <p id="averageDescription"></p>
+            </div>
+        </section>
 
         <!-- none started-->
-        <div class="findings-page">
+        <section id="findings" class="findings-page">
+            <h2>Sleep Habits and GPA Correlation</h2>
 
-        </div>
+            <label for="sleepHabitSelect">Choose a sleep habit:</label>
+            <select id="sleepHabitSelect">
+                <option value="WeekdayBed">Weekday Bedtime</option>
+                <option value="WeekdayRise">Weekday Rise Time</option>
+                <option value="WeekdaySleep">Weekday Sleep Duration</option>
+                <option value="WeekendBed">Weekend Bedtime</option>
+                <option value="WeekendRise">Weekend Rise Time</option>
+                <option value="WeekendSleep">Weekend Sleep Duration</option>
+            </select>
+
+            <div class="chart-card single-scatter-chart">
+                <canvas id="scatterChart"></canvas>
+            </div>
+
+            <p id="correlationResult" class="correlation-result"></p>
+        </section>
         
-        
+         <!-- none started-->
+        <section class="About-con">
 
-
+        </section>      
 
     </body>
+    <script src="../../node_modules/chart.js/dist/chart.umd.js"></script>
+    <script src="../Js/app.js"></script>
 </html>

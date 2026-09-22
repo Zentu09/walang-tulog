@@ -1,0 +1,69 @@
+.performance,
+.findings-page {
+    padding: 60px 5%;
+    background: #f8fbff;
+}
+
+.performance h2,
+.findings-page h2 {
+    color: #102d55;
+}
+
+.performance-grid,
+.scatter-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(280px, 1fr));
+    gap: 20px;
+    margin-top: 25px;
+}
+
+.scatter-grid {
+    grid-template-columns: repeat(3, minmax(280px, 1fr));
+}
+
+.chart-card,
+.average-grade {
+    padding: 20px;
+    background: white;
+    border: 1px solid #dce5ef;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+}
+
+.chart-card h3 {
+    margin-top: 0;
+    color: #183765;
+}
+
+.average-grade {
+    margin-top: 20px;
+}
+
+.average-grade strong {
+    display: block;
+    margin: 8px 0;
+    color: #183765;
+    font-size: 2rem;
+}
+
+#performance .chart-card {
+    height: 350px;
+}
+
+#performance #gpaPieChart {
+    width: 80% !important;
+    height: 280px !important;
+}
+
+@media (max-width: 900px) {
+    .scatter-grid {
+        grid-template-columns: repeat(2, minmax(280px, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    .performance-grid,
+    .scatter-grid {
+        grid-template-columns: 1fr;
+    }
+}
