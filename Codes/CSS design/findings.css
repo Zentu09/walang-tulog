@@ -1,0 +1,26 @@
+#sleepHabitSelect {
+    margin: 15px 0 25px;
+    padding: 8px 12px;
+    border: 1px solid #b8c7d9;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+.single-scatter-chart {
+    width: 100%;
+    max-width: 900px;
+    height: 500px;
+    margin: 20px auto;
+}
+
+.single-scatter-chart canvas {
+    width: 100% !important;
+    height: 440px !important;
+}
+
+.correlation-result {
+    margin-top: 18px;
+    font-weight: bold;
+    color: #183765;
+    text-align: center;
+}
