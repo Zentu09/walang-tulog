@@ -94,10 +94,10 @@ function createPerformanceCharts(rows) {
                 label: "Number of Students",
                 data: counts,
                 backgroundColor: [
-                    "#42bd88",
-                    "#3189df",
-                    "#f2bd4b",
-                    "#e35d62"
+                    "#8fc4ff", // Excellent
+                    "#4f91e8", // Good
+                    "#13589c", // Average
+                    "#0f2967"  // Poor
                 ],
                 borderRadius: 6
             }]
@@ -122,10 +122,10 @@ function createPerformanceCharts(rows) {
             datasets: [{
                 data: counts,
                 backgroundColor: [
-                    "#42bd88",
-                    "#3189df",
-                    "#f2bd4b",
-                    "#e35d62"
+                    "#8fc4ff", // Excellent
+                    "#4f91e8", // Good
+                    "#13589c", // Average
+                    "#0f2967"  // Poor
                 ]
             }]
         },
@@ -133,8 +133,17 @@ function createPerformanceCharts(rows) {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
+                title: {
+                    display: false
+                },
                 legend: {
-                    position: "right"
+                    display: true,
+                    position: "right",
+                    labels: {
+                        color: "#183765",
+                        padding: 16,
+                        usePointStyle: true
+                    }
                 }
             }
         }
@@ -184,8 +193,10 @@ function createScatterCharts(rows) {
                         {
                             label: "Students",
                             data: points,
-                            backgroundColor: "rgba(72, 117, 180, 0.55)",
-                            pointRadius: 3
+                            backgroundColor: "rgba(79, 145, 232, 0.55)",
+                            borderColor: "#8fc4ff",
+                            pointRadius: 3,
+                            pointHoverRadius: 5
                         },
                         {
                             type: "line",
@@ -202,7 +213,7 @@ function createScatterCharts(rows) {
                                         regression.intercept
                                 }
                             ],
-                            borderColor: "#cf4545",
+                            borderColor: "#2879ee", // trend-line color
                             borderWidth: 2,
                             pointRadius: 0,
                             fill: false
@@ -240,17 +251,26 @@ function createScatterCharts(rows) {
 
                     scales: {
                         x: {
-                            title: {
-                                display: true,
-                                text: title
+                            grid: {
+                                color: "#dce9f8"
+                            },
+                            ticks: {
+                                color: "#6681a5"
                             }
                         },
                         y: {
                             min: 2,
                             max: 4,
+                            grid: {
+                                color: "#dce9f8"
+                            },
+                            ticks: {
+                                color: "#6681a5"
+                            },
                             title: {
                                 display: true,
-                                text: "GPA"
+                                text: "GPA",
+                                color: "#477bc3"
                             }
                         }
                     }
@@ -258,13 +278,27 @@ function createScatterCharts(rows) {
             }
         );
 
-        const strength = getCorrelationStrength(
-            regression.correlation
-        );
+        const correlation = regression.correlation;
+        const strength = getCorrelationStrength(correlation);
+        const direction = correlation < 0 ? "negative" : "positive";
 
-        document.getElementById("correlationResult").textContent =
-            `Correlation: r = ${regression.correlation.toFixed(3)} — ` +
-            `${strength} correlation.`;
+        document.getElementById("scatterTitle").textContent =
+            `GPA vs ${title}`;
+
+        document.getElementById("correlationValue").textContent =
+            correlation.toFixed(3);
+
+        document.getElementById("correlationStrength").textContent =
+            `${strength} correlation`;
+
+        document.getElementById("meaningBadge").textContent =
+            `${strength} relationship`;
+
+        document.getElementById("correlationDescription").textContent =
+            `${title} has a ${strength.toLowerCase()} ${direction} relationship with GPA.`;
+
+        document.getElementById("correlationMeaning").textContent =
+            `The points are widely scattered, indicating that ${title.toLowerCase()} has only a ${strength.toLowerCase()} relationship with GPA.`;
     }
 
     select.addEventListener("change", updateScatterChart);

@@ -187,7 +187,7 @@
         </section>
 
         <section id="performance" class="performance-page">
-            <h2>Academic Performance</h2>
+            <div class="t">Academic Performance</div>
 
             <div class="performance-grid">
                 <div class="chart-card">
@@ -202,29 +202,129 @@
             </div>
 
             <div class="average-grade">
-                <h3>Average Grade</h3>
-                <strong id="averageGpa">Loading...</strong>
-                <p id="averageDescription"></p>
+                <div class="grad">                    
+                    <div class="ssss">
+                        <i class="fa-solid fa-graduation-cap"></i>  
+                    </div>                  
+                    <div>
+                        <h3>Average Grade</h3>
+                        <strong id="averageGpa">Loading...</strong>
+                        <p id="averageDescription"></p>
+                    </div>
+                    <div class="vline2"></div>
+                    <div class="t2">The majority of the respondents
+                        fall under the "Good" performance
+                        level, followed by "Excellent"
+                        and "Average"
+                    </div>
+                </div>
+               
             </div>
         </section>
 
         <section id="findings" class="findings-page">
-            <h2>Sleep Habits and GPA Correlation</h2>
+            <div class="findings-heading">
+                <div class="findings-title">
+                    <span class="moon-icon">☾</span>
+                    <div>
+                        <small>SLEEP STUDY</small>
+                        <h2>Sleep Habits &amp; GPA</h2>
+                        <p>Explore how different sleep habits relate to academic performance.</p>
+                    </div>
+                </div>
 
-            <select id="sleepHabitSelect">
-                <option value="WeekdayBed">Weekday Bedtime</option>
-                <option value="WeekdayRise">Weekday Rise Time</option>
-                <option value="WeekdaySleep">Weekday Sleep Duration</option>
-                <option value="WeekendBed">Weekend Bedtime</option>
-                <option value="WeekendRise">Weekend Rise Time</option>
-                <option value="WeekendSleep">Weekend Sleep Duration</option>
-            </select>
-
-            <div class="chart-card single-scatter-chart">
-                <canvas id="scatterChart"></canvas>
+                <div class="habit-selector">
+                    <label for="sleepHabitSelect">SLEEP HABIT</label>
+                    <select id="sleepHabitSelect">
+                        <option value="WeekdayBed">Weekday Bedtime</option>
+                        <option value="WeekdayRise">Weekday Rise Time</option>
+                        <option value="WeekdaySleep">Weekday Sleep Duration</option>
+                        <option value="WeekendBed">Weekend Bedtime</option>
+                        <option value="WeekendRise">Weekend Rise Time</option>
+                        <option value="WeekendSleep">Weekend Sleep Duration</option>
+                    </select>
+                </div>
             </div>
 
-            <p id="correlationResult"></p>
+            <div class="findings-chart-card">
+                <div class="chart-heading">
+                    <h3>▥ <span id="scatterTitle">GPA vs Weekday Bedtime</span></h3>
+                    <div class="chart-legend">
+                        <span><i class="legend-dot"></i> Students</span>
+                        <span><i class="legend-line"></i> Trend line</span>
+                    </div>
+                </div>
+
+                <div class="scatter-chart-container">
+                    <canvas id="scatterChart"></canvas>
+                </div>
+            </div>
+
+            <div class="findings-results">
+                <div class="correlation-card">
+                    <div class="result-icon">↗</div>
+                    <div>
+                        <small>CORRELATION RESULT</small>
+                        <strong id="correlationValue">0.000</strong>
+                        <span>Pearson's r</span>
+                        <div class="correlation-divider"></div>
+                        <p id="correlationDescription">
+                            Select a sleep habit to view its relationship with GPA.
+                        </p>
+                    </div>
+                    <b id="correlationStrength">Very weak correlation</b>
+                </div>
+
+                <div class="meaning-card">
+                    <div class="result-icon">♧</div>
+                    <h3>What does this mean?</h3>
+                    <p id="correlationMeaning">
+                        The points show the relationship between the selected sleep
+                        habit and GPA.
+                    </p>
+                    <span id="meaningBadge">Very weak relationship</span>
+                </div>
+            </div>
+
+            <div class="findings-summary">
+                <article class="summary-card">
+                    <div class="summary-icon">✓</div>
+                    <div>
+                        <small>CONCLUSION</small>
+                        <h3>Sleep timing has a weak relationship with GPA</h3>
+                        <p>
+                            Based on the six sleep-timing variables, none showed a strong
+                            relationship with GPA. Correlations ranged from −0.02 to −0.21
+                            across 254 students. Wake-up time showed the strongest
+                            relationship, with weekday wake time at r = −0.21 and weekend
+                            wake time at r = −0.17.
+                        </p>
+                        <p>
+                            Overall, sleep timing alone does not appear to strongly affect
+                            academic performance. Study habits, course workload, stress,
+                            and personal circumstances may be more important factors.
+                        </p>
+                    </div>
+                </article>
+
+                <article class="summary-card">
+                    <div class="summary-icon">💡</div>
+                    <div>
+                        <small>RECOMMENDATION</small>
+                        <h3>Maintain a consistent sleep schedule</h3>
+                        <p>
+                            Although changing sleep schedules may not directly improve GPA,
+                            students can still benefit from consistent sleep for their
+                            overall well-being.
+                        </p>
+                        <p>
+                            Future research should examine sleep alongside stress, workload,
+                            and study habits. It should also use more accurate sleep
+                            tracking and include students from different institutions.
+                        </p>
+                    </div>
+                </article>
+            </div>
         </section>
 
         <section id="about" class="About-con">

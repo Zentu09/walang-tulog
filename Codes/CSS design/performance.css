@@ -1,69 +1,117 @@
-.performance,
-.findings-page {
-    padding: 60px 5%;
-    background: #f8fbff;
+#performance {
+    min-height: 100vh;
+    padding: 100px 7% 80px;
+    background: linear-gradient(135deg, #f4f8ff, #ffffff);
+    box-sizing: border-box;
 }
 
-.performance h2,
-.findings-page h2 {
+#performance > .t {
+    margin-bottom: 35px;
     color: #102d55;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    text-align: center;
 }
 
-.performance-grid,
-.scatter-grid {
+.performance-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(280px, 1fr));
-    gap: 20px;
-    margin-top: 25px;
-}
-
-.scatter-grid {
-    grid-template-columns: repeat(3, minmax(280px, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 28px;
+    max-width: 1200px;
+    margin: 0 auto 28px;
 }
 
 .chart-card,
 .average-grade {
-    padding: 20px;
-    background: white;
-    border: 1px solid #dce5ef;
-    border-radius: 12px;
-    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+    padding: 28px;
+    border: 1px solid #dbe6f2;
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 10px 30px rgb(24 55 101 / 9%);
 }
 
 .chart-card h3 {
-    margin-top: 0;
+    margin: 0 0 22px;
     color: #183765;
+    font-size: 1.2rem;
+}
+
+.performance-grid .chart-card {
+    height: 390px;
+    box-sizing: border-box;
+}
+
+.performance-grid canvas {
+    width: 100% !important;
+    height: 310px !important;
 }
 
 .average-grade {
-    margin-top: 20px;
+    max-width: 1144px;
+    margin: 0 auto;
+}
+
+.grad {
+    display: grid;
+    grid-template-columns: auto 1fr 1px 1fr;
+    align-items: center;
+    gap: 28px;
+}
+
+.ssss {
+    display: grid;
+    width: 78px;
+    height: 78px;
+    place-items: center;
+    border-radius: 50%;
+    background: #e4efff;
+    color: #2167b1;
+    font-size: 2rem;
+}
+
+.average-grade h3 {
+    margin: 0 0 8px;
+    color: #183765;
 }
 
 .average-grade strong {
     display: block;
-    margin: 8px 0;
     color: #183765;
-    font-size: 2rem;
+    font-size: 2.6rem;
 }
 
-#performance .chart-card {
-    height: 350px;
+.average-grade p {
+    margin: 8px 0 0;
+    color: #66758a;
 }
 
-#performance #gpaPieChart {
-    width: 80% !important;
-    height: 280px !important;
+.vline2 {
+    height: 80px;
+    background: #dbe6f2;
 }
 
-@media (max-width: 900px) {
-    .scatter-grid {
-        grid-template-columns: repeat(2, minmax(280px, 1fr));
-    }
+.average-grade .t2 {
+    color: #53657b;
+    line-height: 1.7;
 }
 
-@media (max-width: 600px) {
-    .performance-grid,
-    .scatter-grid {
+@media (max-width: 750px) {
+    .performance-grid {
         grid-template-columns: 1fr;
     }
+
+    .grad {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .ssss {
+        margin: auto;
+    }
+
+    .vline2 {
+        width: 100%;
+        height: 1px;
+    }
 }
+
