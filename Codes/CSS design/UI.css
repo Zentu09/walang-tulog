@@ -1,43 +1,56 @@
-body {
-    margin: 0;
+html {
+    scroll-behavior: smooth;
     font-family: 'Quicksand', sans-serif !important;
+    margin: 0 !important;
 }
 
+body {
+    margin: 0;
+    padding: 0;
+    
+}
+
+
+
+body.intro-locked {
+    overflow: hidden;
+}
 
 .ulo {
     display: flex;
-    color: #fff;
     align-items: center;
-    background-color: #071D5E;
-    font-size: 18px;
-    height: 80px;
+    justify-content: space-between;
+    width: 100%;
+    min-height: 80px;
+    box-sizing: border-box;
+    padding: 0 30px;
+    background: #071D5E;
+    box-shadow: 0 2px 10px rgb(0 0 0 / 10%);
 }
 
-.ulo a {
-    color: #fff;
-    text-decoration: none;    
-}
-
-nav ul {
-    color: #fff;
-  display: flex;
-  list-style: none; /* Removes bullet points */
-  margin: 0;
-  padding: 0;
-  gap: 25px; /* Creates spacing between each link item */
-  
-}
-
-/* Float Left Effect: Pushes Navigation to the left, right next to the logo */
-nav {
+.ulo nav {
     margin-left: auto;
-    margin-right: 30px;
 }
 
-.logo img {    
-    height: 70px;
-    width: auto;
-    margin-left: 20px;
+.ulo nav ul {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ulo nav a {
+    font-size: 20px;
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.logo img {
+    width: 200px;
+    margin: 0;
 }
 
 /* 
@@ -78,7 +91,9 @@ nav {
 }
 
 .main-page {
-    height: 1500px;
+    
+    padding-top: 0;
+    margin-bottom: 0;
 }
 
 .about-study-page {
@@ -104,7 +119,7 @@ nav {
 }
 
 .text-side .te {
-    font-family: Arial, Helvetica, sans-serif;
+    
     font-size: 60px;
     color: #fff;
     margin: 0 auto 0 10%;
@@ -112,7 +127,7 @@ nav {
 }
 
 .text-side .te2 {
-    font-family: Arial, Helvetica, sans-serif;
+    
     font-size: 25px;
     color: #fff;
     margin: 3% auto 0 10%;
@@ -163,7 +178,8 @@ nav {
     flex-direction: row;
     justify-content: center;
     align-items: center;
-    margin: 3% auto;
+    
+    margin: 3% 0 0 auto;
     max-width: 1920px;    
     column-gap: 30px;
     width: 100%;    
@@ -192,6 +208,51 @@ nav {
     margin-top: 2%;
     font-size: 20px;
     color: #071D5E;
+}
+
+.fade-section {
+    opacity: 0;
+    transform: translateY(25px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.fade-section.show-section {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@media (max-width: 700px) {
+    .scatter-wrapper {
+        height: 420px;
+        padding-right: 35px;
+    }
+}
+
+.header-section {
+    height: 80px;
+    opacity: 1 !important;
+    transform: none !important;
+}
+
+.ulo {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    opacity: 1 !important;
+    transform: translateY(0);
+    transition: transform 0.3s ease;
+}
+
+.ulo.header-hidden {
+    transform: translateY(-100%);
+}
+
+#about-study,
+#sleep-habits,
+#performance,
+#findings {
+    scroll-margin-top: 85px;
 }
 
 

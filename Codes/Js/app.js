@@ -1,6 +1,5 @@
 const CSV_FILE = "../Js/SleepStudy.csv";
 
-
 const scatterColumns = [
     ["WeekdayBed", "Weekday Bedtime"],
     ["WeekdayRise", "Weekday Rise Time"],
@@ -10,7 +9,9 @@ const scatterColumns = [
     ["WeekendSleep", "Weekend Sleep Duration"]
 ];
 
-document.addEventListener("DOMContentLoaded", loadCsv);
+document.addEventListener("DOMContentLoaded", () => {
+    loadCsv();
+});
 
 async function loadCsv() {
     try {
@@ -150,6 +151,8 @@ let scatterChart;
 
 function createScatterCharts(rows) {
     const select = document.getElementById("sleepHabitSelect");
+    const zoomRange = document.getElementById("zoomRange");
+    const resetZoom = document.getElementById("resetZoom");
 
     function updateScatterChart() {
         const selectedColumn = select.value;
@@ -209,12 +212,32 @@ function createScatterCharts(rows) {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+
                     plugins: {
                         title: {
                             display: true,
                             text: `GPA vs ${title}`
+                        },
+                        zoom: {
+                            pan: {
+                                enabled: true,
+                                mode: "xy"
+                            },
+                            zoom: {
+                                wheel: {
+                                    enabled: false
+                                },
+                                pinch: {
+                                    enabled: true
+                                },
+                                drag: {
+                                    enabled: true
+                                },
+                                mode: "xy"
+                            }
                         }
                     },
+
                     scales: {
                         x: {
                             title: {
@@ -246,6 +269,16 @@ function createScatterCharts(rows) {
 
     select.addEventListener("change", updateScatterChart);
     updateScatterChart();
+
+    zoomRange.oninput = () => {
+        scatterChart.resetZoom();
+        scatterChart.zoom(Number(zoomRange.value));
+    };
+
+    resetZoom.onclick = () => {
+        scatterChart.resetZoom();
+        zoomRange.value = "1";
+    };
 }
 
 function getCorrelationStrength(correlation) {
@@ -293,3 +326,62 @@ function calculateRegression(points) {
         maxX: Math.max(...points.map(point => point.x))
     };
 }
+
+// Prevent scrolling until the user chooses to continue.
+
+document.addEventListener("DOMContentLoaded", () => {
+    const header = document.querySelector(".ulo");
+
+    document.getElementById("exploreButton")?.addEventListener("click", () => {
+        document.getElementById("about-study")?.scrollIntoView({
+            behavior: "smooth"
+        });
+    });
+
+    document.getElementById("resultsButton")?.addEventListener("click", () => {
+        document.getElementById("performance")?.scrollIntoView({
+            behavior: "smooth"
+        });
+    });
+
+    const animatedElements = document.querySelectorAll(
+        "section:not(.header-section), .card, .chart-card, .average-grade, .conclusion-section"
+    );
+
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            entry.target.classList.toggle(
+                "show-section",
+                entry.isIntersecting
+            );
+        });
+    }, { threshold: 0.12 });
+
+    animatedElements.forEach(element => {
+        element.classList.add("fade-section");
+        observer.observe(element);
+    });
+
+    let lastScrollPosition = window.scrollY;
+    let ticking = false;
+
+    window.addEventListener("scroll", () => {
+        if (ticking) return;
+
+        window.requestAnimationFrame(() => {
+            const currentPosition = window.scrollY;
+
+            if (currentPosition <= 10 ||
+                currentPosition < lastScrollPosition) {
+                header?.classList.remove("header-hidden");
+            } else if (currentPosition > lastScrollPosition) {
+                header?.classList.add("header-hidden");
+            }
+
+            lastScrollPosition = currentPosition;
+            ticking = false;
+        });
+
+        ticking = true;
+    }, { passive: true });
+});
