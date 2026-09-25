@@ -6,8 +6,12 @@ const scatterColumns = [
     ["WeekdaySleep", "Weekday Sleep Duration"],
     ["WeekendBed", "Weekend Bedtime"],
     ["WeekendRise", "Weekend Rise Time"],
-    ["WeekendSleep", "Weekend Sleep Duration"]
+    ["WeekendSleep", "Weekend Sleep Duration"],
+    ["PoorSleepQuality", "Poor Sleep Quality"],
+    ["SocialJetlag", "Social Jetlag"]
 ];
+
+const categoricalColumns = new Set(["LarkOwl"]);
 
 document.addEventListener("DOMContentLoaded", () => {
     loadCsv();
@@ -22,7 +26,7 @@ async function loadCsv() {
         }
 
         const csvText = await response.text();
-        const rows = parseCsv(csvText);
+        const rows = cleanRows(parseCsv(csvText));
 
         createPerformanceCharts(rows);
         createScatterCharts(rows);
@@ -56,13 +60,52 @@ function parseCsv(csvText) {
 }
 
 function getColumn(row, columnName) {
+    if (columnName === "SocialJetlag") {
+        return row.SocialJetlag;
+    }
+
     const requested = columnName.toLowerCase().replace(/[\s_-]/g, "");
 
     const actualKey = Object.keys(row).find(key =>
         key.toLowerCase().replace(/[\s_-]/g, "") === requested
     );
 
-    return actualKey ? Number.parseFloat(row[actualKey]) : NaN;
+    if (!actualKey || row[actualKey] === undefined || row[actualKey] === "") {
+        return NaN;
+    }
+
+    const value = Number(row[actualKey]);
+    return Number.isFinite(value) ? value : NaN;
+}
+
+function getTextColumn(row, columnName) {
+    const requested = columnName.toLowerCase().replace(/[\s_-]/g, "");
+    const actualKey = Object.keys(row).find(key =>
+        key.toLowerCase().replace(/[\s_-]/g, "") === requested
+    );
+
+    return actualKey ? row[actualKey]?.trim() : "";
+}
+
+function cleanRows(rows) {
+    return rows
+        .filter(row => Number.isFinite(getColumn(row, "GPA")))
+        .map(row => {
+            const weekdayRise = getColumn(row, "WeekdayRise");
+            const weekendRise = getColumn(row, "WeekendRise");
+            const allNighter = getColumn(row, "AllNighter");
+
+            row.SocialJetlag = Number.isFinite(weekdayRise) &&
+                Number.isFinite(weekendRise)
+                ? weekendRise - weekdayRise
+                : NaN;
+
+            if (Number.isFinite(allNighter) && allNighter > 10) {
+                row.AllNighter = "";
+            }
+
+            return row;
+        });
 }
 
 function getGpaRange(gpa) {
@@ -162,11 +205,19 @@ function createScatterCharts(rows) {
     const select = document.getElementById("sleepHabitSelect");
     const zoomRange = document.getElementById("zoomRange");
     const resetZoom = document.getElementById("resetZoom");
+    const chartLegend = document.querySelector(".chart-legend");
 
     function updateScatterChart() {
         const selectedColumn = select.value;
         const selectedOption = select.options[select.selectedIndex];
         const title = selectedOption.textContent;
+
+        if (categoricalColumns.has(selectedColumn)) {
+            updateChronotypeChart(title);
+            return;
+        }
+
+        chartLegend.style.display = "flex";
 
         const points = rows
             .map(row => ({
@@ -301,18 +352,68 @@ function createScatterCharts(rows) {
             `The points are widely scattered, indicating that ${title.toLowerCase()} has only a ${strength.toLowerCase()} relationship with GPA.`;
     }
 
+    function updateChronotypeChart(title) {
+        const groups = [...new Set(rows
+            .map(row => getTextColumn(row, "LarkOwl"))
+            .filter(Boolean))];
+        const averages = groups.map(group => {
+            const gpas = rows
+                .filter(row => getTextColumn(row, "LarkOwl") === group)
+                .map(row => getColumn(row, "GPA"));
+            return gpas.reduce((sum, gpa) => sum + gpa, 0) / gpas.length;
+        });
+
+        if (scatterChart) {
+            scatterChart.destroy();
+        }
+
+        chartLegend.style.display = "none";
+        scatterChart = new Chart(document.getElementById("scatterChart"), {
+            type: "bar",
+            data: {
+                labels: groups,
+                datasets: [{
+                    label: "Average GPA",
+                    data: averages,
+                    backgroundColor: ["#8fc4ff", "#4f91e8", "#13589c"]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { min: 2, max: 4, title: { display: true, text: "Average GPA" } }
+                },
+                plugins: { title: { display: true, text: `Average GPA by ${title}` } }
+            }
+        });
+
+        document.getElementById("scatterTitle").textContent =
+            `Average GPA by ${title}`;
+        document.getElementById("correlationValue").textContent = "N/A";
+        document.getElementById("correlationStrength").textContent =
+            "Group comparison";
+        document.getElementById("meaningBadge").textContent = "Group comparison";
+        document.getElementById("correlationDescription").textContent =
+            "Average GPA is shown separately for each chronotype group.";
+        document.getElementById("correlationMeaning").textContent =
+            "Chronotype is categorical, so a Pearson correlation is not appropriate.";
+    }
+
     select.addEventListener("change", updateScatterChart);
     updateScatterChart();
 
-    zoomRange.oninput = () => {
-        scatterChart.resetZoom();
-        scatterChart.zoom(Number(zoomRange.value));
-    };
+    if (zoomRange && resetZoom) {
+        zoomRange.oninput = () => {
+            scatterChart.resetZoom();
+            scatterChart.zoom(Number(zoomRange.value));
+        };
 
-    resetZoom.onclick = () => {
-        scatterChart.resetZoom();
-        zoomRange.value = "1";
-    };
+        resetZoom.onclick = () => {
+            scatterChart.resetZoom();
+            zoomRange.value = "1";
+        };
+    }
 }
 
 function getCorrelationStrength(correlation) {
