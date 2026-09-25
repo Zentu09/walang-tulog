@@ -255,8 +255,20 @@ body.intro-locked {
     scroll-margin-top: 85px;
 }
 
+.ab-button:hover {
+    scale: 1.05;
+    transition: 0.15s ease-in-out;
+}
 
+.re-button:hover {
+    scale: 1.05;
+    transition: 0.15s ease-in-out;
+}
 
+.card:hover {
+    scale: 1.05;
+    transition: 0.15s ease-in-out; 
+}
 
 
 
