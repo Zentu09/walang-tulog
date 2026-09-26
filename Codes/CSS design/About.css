@@ -26,7 +26,10 @@
 
 .card3 {
     margin: auto;
-    background-color: #e9f0ff;
+    border: 1px solid #c9defa;
+    border-radius: 18px;
+    background: rgb(255 255 255 / 92%);
+    box-shadow: 0 10px 30px rgb(46 105 180 / 8%);
     height: auto;
     width: 80%;
     border-radius: 20px;
@@ -38,7 +41,7 @@
     height: 100px;
     width: 100px;
     border-radius: 50%;
-    background-color: #c7d8fd;
+    background-color: #daeffd;
     margin: 40px;
     display: flex;
     align-items: center;
@@ -53,16 +56,18 @@
     width: 70%;
     margin: 25px;
     font-family: Arial, Helvetica, sans-serif;
-    color: #071D5E;
+    
     
 }
 
 .ab-te .t {    
+    color: #071D5E;
     font-size: 23px;
     font-weight: bold;
 }
 
 .ab-te .t2 {
+    color: #5f7da6;
     margin-top: 1%;
     line-height: 1.5;
     font-size: 18px;

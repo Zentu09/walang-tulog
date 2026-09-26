@@ -7,6 +7,9 @@ html {
 body {
     margin: 0;
     padding: 0;
+    background:
+        radial-gradient(circle at 85% 10%, #dcecff 0, transparent 20%),
+        linear-gradient(135deg, #f7fbff, #eef6ff);
     
 }
 
@@ -42,10 +45,31 @@ body.intro-locked {
 }
 
 .ulo nav a {
+    position: relative;
+    display: inline-block;
+    padding: 8px 0 12px;
     font-size: 20px;
     color: #ffffff;
     text-decoration: none;
     font-weight: 600;
+}
+
+.ulo nav a::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    border-radius: 2px;
+    background-color: #ffffff;
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 0.2s ease-in-out;
+}
+
+.ulo nav a.active::after {
+    transform: scaleX(1);
 }
 
 .logo img {
@@ -148,7 +172,9 @@ body.intro-locked {
 }
 
 .card {
-    background-color: #f3f6ff;
+    background-color: #fbfdff;
+    border: 1px solid #dbe6f2;
+    box-shadow: 0 10px 30px rgb(46 105 180 / 8%);
     height: 250px;
     width: 350px;
     border-radius: 20px;
@@ -269,6 +295,3 @@ body.intro-locked {
     scale: 1.05;
     transition: 0.15s ease-in-out; 
 }
-
-
-

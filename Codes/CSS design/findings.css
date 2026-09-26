@@ -1,9 +1,7 @@
 #findings {
     min-height: 100vh;
     padding: 90px 4% 80px;
-    background:
-        radial-gradient(circle at 85% 10%, #dcecff 0, transparent 20%),
-        linear-gradient(135deg, #f7fbff, #eef6ff);
+  
     box-sizing: border-box;
 }
 

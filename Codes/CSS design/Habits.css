@@ -21,7 +21,8 @@
     height: 300px;
     width: 320px;
     background-color: #E4ECFD;
-    border: 2px #e9f0ff solid;
+    border: 1px solid #dbe6f2;
+    box-shadow: 0 10px 30px rgb(46 105 180 / 8%);
     border-radius: 20px;
     display: flex;
     flex-direction: column;
@@ -36,9 +37,9 @@
     height: 260px;
     width: 320px;
     background-color: #f7faff;
-    border: 2px #dee9ff solid;
+    border: 1px solid #dbe6f2;
     border-radius: 20px; 
-
+    box-shadow: 0 10px 30px rgb(46 105 180 / 8%);
     display: flex;
     flex-direction: column;
     justify-content: center;
