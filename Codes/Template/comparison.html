@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Check Your Sleep Pattern | Sleep Study</title>
+
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="../CSS design/UI.css">
+        <link rel="stylesheet" href="../CSS design/comparison.css">
+    </head>
+    <body>
+        <section class="header-section">
+            <div class="ulo">
+                <div class="logo">
+                    <a href="study.html#about-study" aria-label="Sleep Study home">
+                        <img src="../CSS design/Media3.png" alt="SleepStudy logo">
+                    </a>
+                </div>
+
+                <nav aria-label="Main navigation">
+                    <ul>
+                        <li><a href="study.html#about-study">About Study</a></li>
+                        <li><a href="study.html#sleep-habits">Sleep Habits</a></li>
+                        <li><a href="study.html#performance">Performance</a></li>
+                        <li><a href="study.html#findings">Findings</a></li>
+                        <li><a href="comparison.html" aria-current="page">Compare Sleep</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </section>
+
+        <main>
+            <section id="sleep-comparison" class="comparison-page">
+                <div class="comparison-heading">
+                    <span class="comparison-eyebrow">YOUR SLEEP, IN CONTEXT</span>
+                    <h1>Check Your Sleep Pattern</h1>
+                    <p>Compare your sleep timing with the student responses in our study.</p>
+                    <p><a href="study.html#findings">← Back to the study findings</a></p>
+                </div>
+
+                <form id="sleepComparisonForm" class="comparison-form">
+                    <div class="comparison-fields">
+                        <label>
+                            Weekday bedtime
+                            <input name="weekdayBed" type="time" required>
+                        </label>
+                        <label>
+                            Weekday rise time
+                            <input name="weekdayRise" type="time" required>
+                        </label>
+                        <label>
+                            Weekend bedtime
+                            <input name="weekendBed" type="time" required>
+                        </label>
+                        <label>
+                            Weekend rise time
+                            <input name="weekendRise" type="time" required>
+                        </label>
+                        <label class="optional-gpa">
+                            Current Philippine GPA <span>(optional, 1.00–5.00; 1.00 is highest)</span>
+                            <input name="phGpa" type="number" min="1" max="5" step="0.01"
+                                inputmode="decimal" placeholder="e.g. 2.25">
+                            <small>Only used to show a comparison with the similar-pattern group average. For this comparison only, we provisionally convert it linearly (1.00 → 4.00; 5.00 → 0.00); grading equivalencies vary by school.</small>
+                            <output id="gpaConversionPreview" class="gpa-conversion-preview" aria-live="polite"></output>
+                        </label>
+                    </div>
+
+                    <div class="duration-preview" aria-live="polite">
+                        <div>
+                            <span>Weekday sleep duration</span>
+                            <strong id="weekdayDurationPreview">Enter both times</strong>
+                        </div>
+                        <div>
+                            <span>Weekend sleep duration</span>
+                            <strong id="weekendDurationPreview">Enter both times</strong>
+                        </div>
+                        <div>
+                            <span>Social jetlag</span>
+                            <strong id="jetlagPreview">Enter both rise times</strong>
+                        </div>
+                    </div>
+
+                    <p class="privacy-note">
+                        Privacy: your entries are processed in your browser only, used only to generate this comparison, and are not stored or sent with identifying information.
+                    </p>
+                    <p id="comparisonError" class="comparison-error" role="alert" hidden></p>
+                    <button type="submit" class="comparison-submit">Show my comparison</button>
+                </form>
+
+                <div id="comparisonResults" class="comparison-results" aria-live="polite" hidden>
+                    <div class="results-heading">
+                        <div>
+                            <span class="comparison-eyebrow">YOUR RESULTS</span>
+                            <h2>Your pattern compared with the study</h2>
+                        </div>
+                        <p id="comparisonSampleSize"></p>
+                    </div>
+
+                    <div id="comparisonMetrics" class="comparison-metrics"></div>
+
+                    <article id="gpaBucketResult" class="gpa-bucket-result"></article>
+
+                    <aside class="wellbeing-note">
+                        <span aria-hidden="true">✦</span>
+                        <div>
+                            <h3>Beyond GPA</h3>
+                            <p>Broader sleep research links consistent sleep and wake times with better mood and concentration. That wellbeing connection is separate from this study’s weak GPA findings.</p>
+                        </div>
+                    </aside>
+                </div>
+            </section>
+        </main>
+
+        <script src="../Js/comparison.js"></script>
+    </body>
+</html>
