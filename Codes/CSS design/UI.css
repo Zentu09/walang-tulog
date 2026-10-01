@@ -130,7 +130,7 @@ body.intro-locked {
     justify-content: center;
     height: 600px;
     width: auto;
-    background-image: url("../css design/bg.jpg");
+    background-image: url("../CSS design/bg.jpg");
     background-size: cover;
     background-position: center;
 }
@@ -215,7 +215,7 @@ body.intro-locked {
     background-size: 100% 100%;
     background-position: center;
     background-repeat: no-repeat;
-    background-image: url("../css design/sss.png");
+    background-image: url("../CSS design/sss.png");
 }
 
 .bott .t {
