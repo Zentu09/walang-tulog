@@ -1,11 +1,26 @@
+// [column, label, kind, plain-language explainer, phrase used in the "link to GPA" note]
 const COMPARISON_COLUMNS = [
-    ["WeekdayBed", "Weekday bedtime", "bedtime"],
-    ["WeekdayRise", "Weekday rise time", "clock"],
-    ["WeekdaySleep", "Weekday sleep duration", "duration"],
-    ["WeekendBed", "Weekend bedtime", "bedtime"],
-    ["WeekendRise", "Weekend rise time", "clock"],
-    ["WeekendSleep", "Weekend sleep duration", "duration"],
-    ["SocialJetlag", "Social jetlag", "duration"]
+    ["WeekdayBed", "Weekday bedtime", "bedtime",
+        "What time you go to bed on school days.",
+        "go to bed later on weekdays"],
+    ["WeekdayRise", "Weekday rise time", "clock",
+        "What time you wake up on school days.",
+        "wake up later on weekdays"],
+    ["WeekdaySleep", "Weekday sleep duration", "duration",
+        "How many hours you sleep on school days.",
+        "sleep longer on weekdays"],
+    ["WeekendBed", "Weekend bedtime", "bedtime",
+        "What time you go to bed on weekends.",
+        "go to bed later on weekends"],
+    ["WeekendRise", "Weekend rise time", "clock",
+        "What time you wake up on weekends.",
+        "wake up later on weekends"],
+    ["WeekendSleep", "Weekend sleep duration", "duration",
+        "How many hours you sleep on weekends.",
+        "sleep longer on weekends"],
+    ["SocialJetlag", "Social jetlag", "duration",
+        "How much your wake-up time changes between school days and weekends. A bigger number means a bigger change.",
+        "have a bigger wake-up time change between school days and weekends"]
 ];
 
 let comparisonRows = [];
@@ -147,6 +162,41 @@ function updateGpaConversionPreview(event) {
         : `Approximate comparison-scale GPA: ${convertPhilippineGpaToStudyScale(Number(value)).toFixed(2)} / 4.00`;
 }
 
+// Adds an element once (by id) before or after an anchor, and returns it.
+function ensureElement(id, tag, className, anchor, position) {
+    let element = document.getElementById(id);
+    if (!element) {
+        element = document.createElement(tag);
+        element.id = id;
+        element.className = className;
+        anchor[position](element);
+    }
+    return element;
+}
+
+function renderReadingGuide(metricContainer) {
+    const guide = ensureElement(
+        "comparisonGuide", "p", "comparison-guide", metricContainer, "before"
+    );
+    guide.replaceChildren();
+    const pin = document.createElement("span");
+    pin.className = "guide-pin";
+    pin.setAttribute("aria-hidden", "true");
+    guide.append(
+        "How to read the charts: each blue bar is a group of students, and a taller bar means more students. The red line ",
+        pin,
+        " is you."
+    );
+}
+
+function renderSharedNote(metricContainer) {
+    const note = ensureElement(
+        "comparisonSharedNote", "p", "comparison-shared-note", metricContainer, "after"
+    );
+    note.textContent =
+        "Good to know: in this study, sleep habits had only a small connection to GPA. Students with the same habits had very different GPAs, so these results can't tell you what your grades will be.";
+}
+
 function showSleepComparison(event) {
     event.preventDefault();
     const error = document.getElementById("comparisonError");
@@ -179,7 +229,10 @@ function showSleepComparison(event) {
 
     const metricContainer = document.getElementById("comparisonMetrics");
     metricContainer.replaceChildren();
-    COMPARISON_COLUMNS.forEach(([column, label, kind]) => {
+    renderReadingGuide(metricContainer);
+    renderSharedNote(metricContainer);
+
+    COMPARISON_COLUMNS.forEach(([column, label, kind, explainer, trend]) => {
         const sample = comparisonRows.map(row => row[column]);
         const stats = getDistributionStats(sample, userValues[column]);
         metricContainer.appendChild(createMetricCard(
@@ -188,12 +241,14 @@ function showSleepComparison(event) {
             kind,
             stats,
             getCorrelation(sample, comparisonRows.map(row => row.GPA)),
-            sample
+            sample,
+            explainer,
+            trend
         ));
     });
 
     document.getElementById("comparisonSampleSize").textContent =
-        `Based on ${comparisonRows.length} cleaned student responses`;
+        `Based on responses from ${comparisonRows.length} students`;
     renderGpaBucket(userValues, convertedGpa, philippineGpa);
     document.getElementById("comparisonResults").hidden = false;
     document.getElementById("comparisonResults").scrollIntoView({
@@ -237,7 +292,35 @@ function getCorrelation(values, gpas) {
     return denominator === 0 ? 0 : numerator / denominator;
 }
 
-function createMetricCard(label, userValue, kind, stats, correlation, sample) {
+// Turns a percentile into a plain sentence.
+function describePosition(percentile, kind) {
+    const isDuration = kind === "duration";
+    const lowWord = isDuration ? "shorter" : "earlier";
+    const highWord = isDuration ? "longer" : "later";
+
+    if (percentile <= 5) return `${capitalize(lowWord)} than almost everyone`;
+    if (percentile >= 95) return `${capitalize(highWord)} than almost everyone`;
+    if (percentile >= 45 && percentile <= 55) return "About the same as most students";
+    if (percentile > 55) return `${capitalize(highWord)} than ${percentile} out of 100 students`;
+    return `${capitalize(lowWord)} than ${100 - percentile} out of 100 students`;
+}
+
+function capitalize(text) {
+    return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+// One short, plain sentence about how this relates to GPA.
+function describeGpaLink(correlation, trend) {
+    const size = Math.abs(correlation);
+    if (size < 0.1) {
+        return "This made almost no difference to GPA in this study.";
+    }
+    const amount = size < 0.3 ? "slightly" : "somewhat";
+    const direction = correlation < 0 ? "lower" : "higher";
+    return `Students who ${trend} had ${amount} ${direction} GPAs on average. The difference is small, so it can't tell us much about you.`;
+}
+
+function createMetricCard(label, userValue, kind, stats, correlation, sample, explainer, trend) {
     const card = document.createElement("article");
     card.className = "metric-result";
 
@@ -245,13 +328,17 @@ function createMetricCard(label, userValue, kind, stats, correlation, sample) {
     heading.textContent = label;
     card.appendChild(heading);
 
+    const explanation = document.createElement("p");
+    explanation.className = "metric-explainer";
+    explanation.textContent = explainer;
+    card.appendChild(explanation);
+
     const summary = document.createElement("div");
     summary.className = "metric-summary";
     const result = document.createElement("strong");
     result.textContent = formatMetric(userValue, kind);
     const percentile = document.createElement("span");
-    percentile.textContent =
-        `${kind === "duration" ? "Longer" : "Later"} than ${stats.percentile}% of ${sample.length} students`;
+    percentile.textContent = describePosition(stats.percentile, kind);
     summary.append(result, percentile);
     card.appendChild(summary);
 
@@ -263,8 +350,7 @@ function createMetricCard(label, userValue, kind, stats, correlation, sample) {
 
     const disclaimer = document.createElement("p");
     disclaimer.className = "metric-disclaimer";
-    disclaimer.textContent =
-        `This is based on a weak statistical association (r ≈ ${correlation.toFixed(2)}), not a strong predictor. Students with similar patterns showed a range of GPAs, including both higher and lower values. This is not a prediction of your own outcome.`;
+    disclaimer.textContent = describeGpaLink(correlation, trend);
     card.appendChild(disclaimer);
     return card;
 }
@@ -276,12 +362,12 @@ function formatMetric(value, kind) {
 
 function getFeedback(difference, standardDeviation, kind) {
     if (standardDeviation === 0 || Math.abs(difference) <= standardDeviation * 0.5) {
-        return "Within typical range";
+        return "Like most students";
     }
 
     const intensity = Math.abs(difference) <= standardDeviation * 1.5
-        ? "Somewhat"
-        : "Notably";
+        ? "A bit"
+        : "Much";
     let direction;
     if (kind === "duration") {
         direction = difference < 0 ? "shorter" : "longer";
@@ -290,14 +376,17 @@ function getFeedback(difference, standardDeviation, kind) {
     } else {
         direction = difference < 0 ? "lower" : "higher";
     }
-    return `${intensity} ${direction} than typical`;
+    return `${intensity} ${direction} than most students`;
 }
 
 function createDistributionPlot(values, userValue, stats, kind, label) {
     const plot = document.createElement("div");
     plot.className = "distribution-plot";
     plot.setAttribute("role", "img");
-    plot.setAttribute("aria-label", `Distribution of ${label} in the study, with your value marked`);
+    plot.setAttribute(
+        "aria-label",
+        `Chart of how students' ${label.toLowerCase()} is spread out, with your value marked`
+    );
 
     const binCount = 12;
     const bins = Array(binCount).fill(0);
@@ -354,7 +443,7 @@ function renderGpaBucket(userValues, convertedGpa, philippineGpa) {
 
     const averageGpa = peers.reduce((sum, row) => sum + row.GPA, 0) / peers.length;
     const heading = document.createElement("h4");
-    heading.textContent = "Average GPA for a similar sleep-pattern group";
+    heading.textContent = "Average GPA of students who sleep like you";
     result.appendChild(heading);
 
     const average = document.createElement("strong");
@@ -362,31 +451,31 @@ function renderGpaBucket(userValues, convertedGpa, philippineGpa) {
     average.textContent = peers.length ? averageGpa.toFixed(2) : "Not available";
     result.appendChild(average);
 
+    const hourWord = value => `hour${value === 1 ? "" : "s"}`;
     const groupDescription = document.createElement("p");
-    groupDescription.textContent = peers.length
-        ? `${peers.length} students in the group with weekday sleep near ${durationBucket} hours and social jetlag near ${jetlagBucket} hours${radius > 0 ? ` (including adjacent rounded buckets, up to ${radius} hours away)` : ""}. This is a group average, not an individual prediction.`
-        : "There were no student responses in a similar sleep-pattern range.";
+    if (peers.length) {
+        const smallGroup = peers.length < 20
+            ? " That's a small group, so treat this as a rough guide."
+            : "";
+        groupDescription.textContent =
+            `This is the average GPA of ${peers.length} students who sleep about ${durationBucket} ${hourWord(durationBucket)} on school days and whose wake-up time changes by about ${jetlagBucket} ${hourWord(jetlagBucket)} on weekends.${smallGroup}`;
+    } else {
+        groupDescription.textContent =
+            "No students in the study had a sleep pattern close to yours, so there is no average to show.";
+    }
     result.appendChild(groupDescription);
 
     if (philippineGpa !== "") {
         const personalComparison = document.createElement("p");
         personalComparison.textContent = peers.length
-            ? `Your Philippine GPA (${Number(philippineGpa).toFixed(2)}) converts provisionally to ${convertedGpa.toFixed(2)} / 4.00 and is shown only for comparison with this group average.`
-            : "Your entered GPA is not stored; no similar-pattern group average was available.";
+            ? `Your GPA of ${Number(philippineGpa).toFixed(2)} is about ${convertedGpa.toFixed(2)} on a 4.00 scale. It's shown here only so you can compare.`
+            : "Your GPA isn't saved, and there was no average to compare it with.";
         result.appendChild(personalComparison);
     }
 
-    const durationCorrelation = getCorrelation(
-        comparisonRows.map(row => row.WeekdaySleep),
-        comparisonRows.map(row => row.GPA)
-    );
-    const jetlagCorrelation = getCorrelation(
-        comparisonRows.map(row => row.SocialJetlag),
-        comparisonRows.map(row => row.GPA)
-    );
     const disclaimer = document.createElement("p");
     disclaimer.className = "bucket-disclaimer";
     disclaimer.textContent =
-        `These sleep measures have weak statistical associations with GPA (weekday sleep r ≈ ${durationCorrelation.toFixed(2)}; social jetlag r ≈ ${jetlagCorrelation.toFixed(2)}), not strong predictors. Students with similar patterns showed a range of GPAs, including both higher and lower values. This group average is not a prediction of your own outcome.`;
+        "This is just an average of other students. It can't tell you what your GPA will be.";
     result.appendChild(disclaimer);
 }
