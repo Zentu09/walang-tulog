@@ -4,13 +4,21 @@
             ABOUT STUDY PAGE
 ========================================
 */
+.about-study-page {
+    height: auto;
+    margin-top: 0;
+    padding: 112px 5% 72px;
+    box-sizing: border-box;
+}
 
 .aboutst {
+    max-width: 1100px;
+    margin: 28px auto 0;
     display: flex;
     flex-direction: column;
     justify-content: center;
     
-    row-gap: 40px;
+    row-gap: 24px;
 }
 
 .vline {
@@ -22,20 +30,25 @@
 }
 
 .card3 {
-    margin: auto;
-    background-color: #e9f0ff;
+    margin: 0 auto;
+    border: 1px solid #c9defa;
+    border-radius: var(--card-radius);
+    background: rgb(255 255 255 / 92%);
+    box-shadow: 0 10px 30px rgb(46 105 180 / 8%);
     height: auto;
-    width: 80%;
-    border-radius: 20px;
+    width: 100%;
     display: flex;
     flex-direction: row;
+    align-items: stretch;
 }
 
 .icc {
+    box-sizing: content-box;
+    flex: 0 0 100px;
     height: 100px;
     width: 100px;
     border-radius: 50%;
-    background-color: #c7d8fd;
+    background-color: #daeffd;
     margin: 40px;
     display: flex;
     align-items: center;
@@ -47,19 +60,20 @@
 }
 
 .ab-te {
-    width: 70%;
+    flex: 1;
+    min-width: 0;
+    width: auto;
     margin: 25px;
-    font-family: Arial, Helvetica, sans-serif;
-    color: #071D5E;
-    
 }
 
 .ab-te .t {    
+    color: #071D5E;
     font-size: 23px;
     font-weight: bold;
 }
 
 .ab-te .t2 {
+    color: #5f7da6;
     margin-top: 1%;
     line-height: 1.5;
     font-size: 18px;
@@ -72,17 +86,65 @@
 }
 
 .about-study-page .te {
-    margin: 0% 0% 0% 10%;
-    font-size: 50px;
+    max-width: 1100px;
+    margin: 0 auto;
+    font-size: clamp(2rem, 4vw, 3rem);
     color: #071D5E;
-    font-family: Arial, Helvetica, sans-serif;
     font-weight: bold;
 }
 
 .about-study-page .te2 {
-    margin: 0% 0% 2% 10%;
-    font-size: 20px;
+    max-width: 1100px;
+    margin: 8px auto 0;
+    font-size: 1.1rem;
     color: #071D5E;
-    font-family: Arial, Helvetica, sans-serif;
-    
 }
+
+@media (max-width: 780px) {
+    .about-study-page {
+        padding: 28px 5% 60px;
+    }
+
+    .card3 {
+        flex-direction: column;
+    }
+
+    .icc {
+        flex: 0 0 auto;
+        width: 72px;
+        height: 72px;
+        margin: 24px auto 0;
+    }
+
+    .fee {
+        font-size: 34px;
+    }
+
+    .vline {
+        display: none;
+    }
+
+    .ab-te {
+        margin: 16px 22px 24px;
+    }
+
+    .ab-te .t {
+        font-size: 24px;
+    }
+
+    .ab-te .t2 {
+        font-size: 20px;
+        line-height: 1.65;
+    }
+
+    .about-study-page .te2 {
+        margin-bottom: 24px;
+    }
+}
+
+@media (max-width: 380px) {
+    .about-study-page {
+        padding-top: 28px;
+    }
+}
+
