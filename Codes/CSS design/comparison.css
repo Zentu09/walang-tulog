@@ -41,7 +41,7 @@
 .wellbeing-note,
 .metric-result {
     border: 1px solid #c9defa;
-    border-radius: 18px;
+    border-radius: var(--card-radius);
     background: rgb(255 255 255 / 94%);
     box-shadow: 0 10px 30px rgb(46 105 180 / 8%);
 }
@@ -332,9 +332,9 @@
     line-height: 1.55;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 780px) {
     .comparison-page {
-        padding: 72px 5% 60px;
+        padding: 24px 5% 60px;
     }
 
     .comparison-fields,
@@ -360,6 +360,33 @@
     }
 
     .comparison-form {
-        padding: 20px;
+        padding: 18px;
+    }
+
+    .comparison-heading {
+        margin-bottom: 20px;
+    }
+
+    .comparison-heading h1 {
+        font-size: clamp(1.8rem, 8vw, 2.5rem);
+    }
+
+    .duration-preview {
+        gap: 10px;
+        padding: 14px;
+    }
+
+    .metric-result {
+        padding: 18px;
+    }
+
+    .metric-summary {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .metric-summary span {
+        text-align: left;
     }
 }

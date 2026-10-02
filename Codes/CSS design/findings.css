@@ -76,7 +76,7 @@
 .correlation-card,
 .meaning-card {
     border: 1px solid #c9defa;
-    border-radius: 18px;
+    border-radius: var(--card-radius);
     background: rgb(255 255 255 / 90%);
     box-shadow: 0 10px 30px rgb(46 105 180 / 8%);
 }
@@ -290,5 +290,70 @@
 
     .correlation-card b {
         margin-left: 0;
+    }
+}
+
+@media (max-width: 780px) {
+    #findings {
+        min-height: 0;
+        padding: 28px 5% 60px;
+    }
+
+    .findings-heading {
+        gap: 18px;
+        margin-bottom: 22px;
+    }
+
+    .findings-title {
+        gap: 12px;
+    }
+
+    .moon-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 2.7rem;
+    }
+
+    .habit-selector {
+        padding: 12px 14px;
+    }
+
+    .chart-heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 8px;
+        padding: 16px;
+    }
+
+    .scatter-chart-container {
+        height: 320px;
+        padding: 12px 10px;
+    }
+
+    .findings-summary {
+        grid-template-columns: 1fr;
+        gap: 14px;
+        margin-top: 18px;
+    }
+
+    .findings-results {
+        gap: 14px;
+        margin-top: 14px;
+    }
+
+    .summary-card,
+    .correlation-card,
+    .meaning-card {
+        padding: 18px;
+    }
+
+    .correlation-card {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .correlation-card b {
+        align-self: flex-start;
+        padding: 8px 12px;
     }
 }

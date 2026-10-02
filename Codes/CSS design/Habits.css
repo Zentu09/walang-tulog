@@ -6,45 +6,54 @@
 ========================================
 */
 .habits-page {
-    height: 1000px;
+    height: auto;
+    min-height: 0;
+    padding: 108px 5% 80px;
+    box-sizing: border-box;
 }
 
 .sleep-hab {
-    display: flex;
-    justify-content: center;
-    flex-direction: row;
-    gap: 50px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-width: 1080px;
+    margin: 22px auto 0;
+    gap: 20px;
 }
 
 .card4 {
-    margin-top: 50px; 
-    height: 300px;
-    width: 320px;
+    min-height: 270px;
+    height: auto;
+    width: 100%;
     background-color: #E4ECFD;
     border: 1px solid #dbe6f2;
     box-shadow: 0 10px 30px rgb(46 105 180 / 8%);
-    border-radius: 20px;
+    border-radius: var(--card-radius);
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     row-gap: 10px;
-    
+    padding: 22px 16px;
+    box-sizing: border-box;
+    text-align: center;
 }
 
 .card5 {
-    margin-top: 50px; 
-    height: 260px;
-    width: 320px;
+    min-height: 250px;
+    height: auto;
+    width: 100%;
     background-color: #f7faff;
     border: 1px solid #dbe6f2;
-    border-radius: 20px; 
+    border-radius: var(--card-radius);
     box-shadow: 0 10px 30px rgb(46 105 180 / 8%);
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     row-gap: 15px;
+    padding: 22px 16px;
+    box-sizing: border-box;
+    text-align: center;
 }
 
 .fer {
@@ -89,24 +98,24 @@
 }
 
 .hab {    
-    margin-left: 220px;
+    max-width: 1080px;
+    margin: 0 auto;
     color: #242863;
-    font-size: 50px; 
+    font-size: clamp(2rem, 4vw, 3rem);
     font-weight: bold;
 }
 
 .hab3 { 
-    margin-left: 220px;
-    margin-top: 100px;    
+    max-width: 1080px;
+    margin: 52px auto 0;
     font-weight: bold;
-    
     color: #242863;
-    font-size: 30px; 
+    font-size: clamp(1.5rem, 3vw, 2rem);
 }   
 
 .hab2 {   
-    margin-top: 5px; 
-    margin-left: 220px;
+    max-width: 1080px;
+    margin: 8px auto 0;
     color: #242863;
     font-size: 20px;     
 }
@@ -119,6 +128,34 @@
 .card5:hover {
     scale: 1.05;
     transition: 0.15s ease-in-out; 
+}
+
+@media (max-width: 900px) {
+    .sleep-hab {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 780px) {
+    .habits-page {
+        padding: 28px 5% 60px;
+    }
+
+    .sleep-hab {
+        grid-template-columns: 1fr;
+        max-width: 520px;
+        gap: 16px;
+    }
+
+    .hab3 {
+        margin-top: 36px;
+    }
+}
+
+@media (max-width: 380px) {
+    .habits-page {
+        padding-top: 28px;
+    }
 }
 
 
