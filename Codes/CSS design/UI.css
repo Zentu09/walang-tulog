@@ -68,7 +68,8 @@ body.intro-locked {
     transition: transform 0.2s ease-in-out;
 }
 
-.ulo nav a.active::after {
+.ulo nav a.active::after,
+.ulo nav a[aria-current="page"]::after {
     transform: scaleX(1);
 }
 
