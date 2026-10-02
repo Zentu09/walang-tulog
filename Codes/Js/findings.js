@@ -17,6 +17,9 @@ function createScatterCharts(rows) {
     const zoomRange = document.getElementById("zoomRange");
     const resetZoom = document.getElementById("resetZoom");
     const chartLegend = document.querySelector(".chart-legend");
+    const isCompactViewport = () => window.matchMedia(
+        "(max-width: 780px), (max-height: 500px) and (orientation: landscape) and (max-width: 1000px)"
+    ).matches;
 
     function updateScatterChart() {
         const selectedColumn = select.value;
@@ -57,8 +60,8 @@ function createScatterCharts(rows) {
                             data: points,
                             backgroundColor: "rgba(79, 145, 232, 0.55)",
                             borderColor: "#8fc4ff",
-                            pointRadius: 3,
-                            pointHoverRadius: 5
+                            pointRadius: isCompactViewport() ? 4 : 3,
+                            pointHoverRadius: isCompactViewport() ? 6 : 5
                         },
                         {
                             type: "line",
@@ -85,6 +88,7 @@ function createScatterCharts(rows) {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    font: { size: isCompactViewport() ? 14 : 12 },
                     plugins: {
                         title: {
                             display: true,
@@ -171,6 +175,7 @@ function createScatterCharts(rows) {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                font: { size: isCompactViewport() ? 14 : 12 },
                 scales: {
                     y: {
                         min: 2,

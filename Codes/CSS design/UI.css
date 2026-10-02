@@ -373,6 +373,10 @@ body.intro-locked {
 }
 
 @media (max-width: 780px), (max-height: 500px) and (orientation: landscape) and (max-width: 1000px) {
+    body {
+        font-size: 17px;
+    }
+
     .header-section {
         height: 72px;
     }

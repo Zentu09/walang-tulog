@@ -102,12 +102,15 @@
     }
 
     .performance-grid {
-        grid-template-columns: 1fr;
+        display: flex;
+        flex-direction: column;
         gap: 16px;
     }
 
     .grad {
-        grid-template-columns: 1fr;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
         text-align: center;
     }
 
@@ -127,6 +130,7 @@
 
     .performance-grid .chart-card {
         height: 350px;
+        width: 100%;
     }
 
     .performance-grid canvas {

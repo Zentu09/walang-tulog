@@ -326,8 +326,8 @@
     }
 
     .scatter-chart-container {
-        height: 320px;
-        padding: 12px 10px;
+        height: clamp(340px, 100vw, 390px);
+        padding: 8px;
     }
 
     .findings-summary {
@@ -337,6 +337,8 @@
     }
 
     .findings-results {
+        display: flex;
+        flex-direction: column;
         gap: 14px;
         margin-top: 14px;
     }
