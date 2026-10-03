@@ -268,7 +268,7 @@ body.intro-locked {
     align-items: center;
     
     margin: 48px auto 0;
-    max-width: 1150px;
+    max-width: auto;
     column-gap: 30px;
     width: 100%;
     box-sizing: border-box;

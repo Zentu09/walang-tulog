@@ -309,9 +309,7 @@
     }
 
     .moon-icon {
-        width: 48px;
-        height: 48px;
-        font-size: 2.7rem;
+        display: none;
     }
 
     .habit-selector {
@@ -357,5 +355,9 @@
     .correlation-card b {
         align-self: flex-start;
         padding: 8px 12px;
+    }
+
+    .summary-icon {
+        display: none;
     }
 }
