@@ -2,7 +2,7 @@
 
 ## 1. Purpose of the system
 
-This web system is a static, data-driven informational website designed to study the relationship between students' sleep habits and academic performance. Its goal is to help users understand how patterns such as bedtime, wake time, sleep duration, poor sleep quality, and chronotype might influence GPA and overall academic outcomes.
+This web system is a data-driven informational website designed to study the relationship between students' sleep habits and academic performance. Its goal is to help users understand how patterns such as bedtime, wake time, sleep duration, poor sleep quality, and chronotype might influence GPA and overall academic outcomes.
 
 The project is built around a dataset of student responses and presents the results through a clean dashboard style interface, charts, and explanatory text.
 
@@ -72,36 +72,48 @@ This is the main analytical section. It uses a dropdown to select variables such
 - Social Jetlag
 - Chronotype (Lark/Owl/Neither)
 
-The graph updates dynamically based on the selected habit and displays the computed relationship to GPA.
+The school-level chart uses the selected school's valid submissions and selected
+sleep measure. It displays a correlation only after the project team sets an
+approved minimum response count and the data passes the validity checks. The
+original study summary remains based on the existing dataset.
 
 ## 4. Technologies used
 
-The website is a frontend-only application built with:
+The website uses:
 - HTML for structure
 - CSS for styling and layout
 - JavaScript for interactivity and data processing
 - Chart.js for graphs and trend visualization
 - Font Awesome icons for UI elements
+- Node.js built-in modules for the submission server
 
-The project does not use a backend database or server-side processing. Instead, it loads a CSV file locally in the browser and performs all calculations on the client side.
+The performance charts and Compare Sleep feature load the original CSV in the
+browser. The Findings chart uses new submissions for one selected school, loaded
+through the Node.js server, and checks each selected sleep measure against GPA.
+It does not overwrite `Codes/Js/SleepStudy.csv` or change the Compare Sleep
+workflow.
 
 ## 5. Data flow in the system
 
 The system follows a simple workflow:
 
 1. The page loads.
-2. The JavaScript checks whether the sleep habit selector exists.
-3. It fetches the CSV file from the local project folder.
-4. The CSV is parsed into rows and normalized.
-5. The rows are cleaned and transformed.
-6. GPA charts are generated.
-7. Scatter plots are generated based on the selected sleep variable.
-8. Correlation values are computed and displayed.
+2. The existing performance charts fetch and parse the original CSV.
+3. New submissions for the selected school are loaded from the server.
+4. The selected sleep measure and GPA are checked for valid numerical values.
+5. A school-level chart and correlation are shown only when enough valid
+   responses meet the configured minimum.
+
+The submission workflow is separate: the form sends its response to the local
+Node.js server, which checks required fields, normalizes the school name, avoids
+retry duplicates, and appends the response to the new submissions CSV.
 
 Important logic is handled in the JavaScript files:
 - `Codes/Js/data.js` parses and cleans the CSV.
 - `Codes/Js/performance.js` generates the GPA charts and summary metrics.
-- `Codes/Js/findings.js` generates the scatter plots and computes correlation strength.
+- `Codes/Js/findings.js` checks the selected school's submission data, enforces
+  the minimum valid-response count, and generates the chart and correlation.
+- `server.js` returns only the analysis fields for the selected school.
 - `Codes/Template/index.html` and `Codes/Template/study.html` provide the page structure and content.
 
 ## 6. How the data is analyzed
@@ -124,7 +136,9 @@ For chronotype, the system switches to a bar chart comparing average GPA by grou
 
 ## 7. Key findings reflected in the system
 
-The platform’s own findings section states that the sleep timing variables had only weak relationships with GPA. In the dataset used by the project:
+The original dataset summary in the website states that the sleep timing
+variables had only weak relationships with GPA. It remains separate from the
+new school-level analysis:
 
 - Weekday rise time showed the strongest negative correlation with GPA at approximately -0.21.
 - Other variables ranged from around -0.02 to -0.17.
@@ -133,10 +147,22 @@ The platform’s own findings section states that the sleep timing variables had
 
 This conclusion is designed to promote balanced analysis rather than oversimplifying the relationship between sleep and grades.
 
+### School-level data sufficiency
+
+`Codes/Js/findings.js` contains the setting
+`MINIMUM_VALID_RESPONSES_PER_SCHOOL`. It is currently `null` because the project
+team has not confirmed a threshold from its research methodology. While unset,
+the page reports the valid response count but does not display a school-level
+chart. Once the project leader confirms the minimum, set this value to that
+positive whole-number threshold. For each selected sleep measure, only records
+with a valid GPA and a valid value for that measure are counted. Chronotype
+comparisons also require at least two valid groups. Missing, non-numeric,
+out-of-range, and non-varying data are not used to generate a misleading chart.
+
 ## 8. Report summary
 
 ### Overall assessment
-This project is a well-structured academic dashboard that turns student sleep data into visual insight. It successfully combines educational content, visual analytics, and interpretation in one static website.
+This project is a well-structured academic dashboard that turns student sleep data into visual insight. It combines educational content, visual analytics, data collection, and interpretation.
 
 ### Strengths
 - Clear and user-friendly design
@@ -146,8 +172,10 @@ This project is a well-structured academic dashboard that turns student sleep da
 - Insightful interpretation of data
 
 ### Limitations
-- It is a front-end-only application with no backend or actual user login/system database.
-- It relies on a static CSV dataset rather than live survey data.
+- Submissions are stored in a local CSV file; this is not a hosted database.
+- The submission server listens on the local computer and must be hosted or configured on an approved network for students on other devices.
+- The original performance summary and Compare Sleep feature still use the
+  static study CSV.
 - Correlation does not prove causation; it only suggests relationships.
 
 ### Final conclusion

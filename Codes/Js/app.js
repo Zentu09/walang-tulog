@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     if (document.getElementById("sleepHabitSelect")) {
+        createScatterCharts();
         loadCsv();
     }
 });
@@ -16,10 +17,7 @@ async function loadCsv() {
         const rows = cleanRows(parseCsv(csvText));
 
         createPerformanceCharts(rows);
-        createScatterCharts(rows);
     } catch (error) {
         console.error(error);
-        document.querySelector("#scatterCharts").innerHTML =
-            "<p>Unable to load the CSV file. Run the website using Live Server.</p>";
     }
 }

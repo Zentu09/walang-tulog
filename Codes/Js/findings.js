@@ -1,49 +1,152 @@
-const scatterColumns = [
-    ["WeekdayBed", "Weekday Bedtime"],
-    ["WeekdayRise", "Weekday Rise Time"],
-    ["WeekdaySleep", "Weekday Sleep Duration"],
-    ["WeekendBed", "Weekend Bedtime"],
-    ["WeekendRise", "Weekend Rise Time"],
-    ["WeekendSleep", "Weekend Sleep Duration"],
-    ["PoorSleepQuality", "Poor Sleep Quality"],
-    ["SocialJetlag", "Social Jetlag"]
-];
-
-const categoricalColumns = new Set(["LarkOwl"]);
+// Set this after the project leader approves the minimum response count.
+const MINIMUM_VALID_RESPONSES_PER_SCHOOL = null;
 let scatterChart;
 
-function createScatterCharts(rows) {
+function createScatterCharts() {
+    const schoolSelect = document.getElementById("schoolFilter");
     const select = document.getElementById("sleepHabitSelect");
     const zoomRange = document.getElementById("zoomRange");
     const resetZoom = document.getElementById("resetZoom");
     const chartLegend = document.querySelector(".chart-legend");
+    const canvas = document.getElementById("scatterChart");
+    const findingsMessage = document.getElementById("findingsMessage");
+    let rows = [];
     const isCompactViewport = () => window.matchMedia(
         "(max-width: 780px), (max-height: 500px) and (orientation: landscape) and (max-width: 1000px)"
     ).matches;
+
+    function showMessage(message) {
+        if (scatterChart) {
+            scatterChart.destroy();
+            scatterChart = null;
+        }
+
+        chartLegend.style.display = "none";
+        canvas.style.display = "none";
+        findingsMessage.textContent = message;
+        findingsMessage.style.display = "flex";
+        document.getElementById("scatterTitle").textContent =
+            "School data is not ready to display";
+        document.getElementById("correlationValue").textContent = "N/A";
+        document.getElementById("correlationStrength").textContent =
+            "Not available";
+        document.getElementById("meaningBadge").textContent = "Not available";
+        document.getElementById("correlationDescription").textContent = message;
+        document.getElementById("correlationMeaning").textContent = message;
+    }
+
+    function showChart() {
+        findingsMessage.textContent = "";
+        findingsMessage.style.display = "none";
+        canvas.style.display = "block";
+    }
+
+    function validNumber(value, column) {
+        if (value === undefined || value === null || String(value).trim() === "") {
+            return null;
+        }
+
+        const number = Number(value);
+        if (isNaN(number)) return null;
+
+        if (column === "GPA" && (number < 0 || number > 4)) return null;
+        if ((column === "WeekdayBed" || column === "WeekendBed") &&
+            (number < 12 || number > 35.99)) return null;
+        if ((column === "WeekdayRise" || column === "WeekendRise") &&
+            (number < 0 || number > 23.99)) return null;
+        if ((column === "WeekdaySleep" || column === "WeekendSleep" ||
+            column === "SocialJetlag") && (number < 0 || number > 24)) return null;
+        if (column === "PoorSleepQuality" &&
+            (!Number.isInteger(number) || number < 0)) {
+            return null;
+        }
+
+        return number;
+    }
+
+    function getValidPoints(column) {
+        const points = [];
+
+        for (let i = 0; i < rows.length; i += 1) {
+            const x = validNumber(rows[i][column], column);
+            const y = validNumber(rows[i].GPA, "GPA");
+
+            if (x !== null && y !== null) {
+                points.push({ x: x, y: y });
+            }
+        }
+
+        return points;
+    }
+
+    function getEligibilityMessage(points) {
+        if (MINIMUM_VALID_RESPONSES_PER_SCHOOL === null) {
+            return `This analysis has ${points.length} valid responses. ` +
+                "School charts are disabled until the study team sets a " +
+                "methodology-approved minimum response count.";
+        }
+        if (!Number.isInteger(MINIMUM_VALID_RESPONSES_PER_SCHOOL) ||
+            MINIMUM_VALID_RESPONSES_PER_SCHOOL < 1) {
+            return "Set the minimum response count to an approved whole number " +
+                "greater than zero.";
+        }
+        if (points.length < MINIMUM_VALID_RESPONSES_PER_SCHOOL) {
+            return `This analysis has ${points.length} valid responses, but needs ` +
+                `${MINIMUM_VALID_RESPONSES_PER_SCHOOL} before it can be displayed. ` +
+                "More valid student responses are needed.";
+        }
+
+        return "";
+    }
+
+    function hasDifferentValues(points, column) {
+        if (points.length < 2) return false;
+
+        const firstValue = points[0][column];
+        for (let i = 1; i < points.length; i += 1) {
+            if (points[i][column] !== firstValue) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     function updateScatterChart() {
         const selectedColumn = select.value;
         const selectedOption = select.options[select.selectedIndex];
         const title = selectedOption.textContent;
 
-        if (categoricalColumns.has(selectedColumn)) {
+        if (selectedColumn === "LarkOwl") {
             updateChronotypeChart(title);
             return;
         }
 
+        const points = getValidPoints(selectedColumn);
+        const message = getEligibilityMessage(points);
+        if (message) {
+            showMessage(message);
+            return;
+        }
+        if (!hasDifferentValues(points, "x") ||
+            !hasDifferentValues(points, "y")) {
+            showMessage(
+                "There are enough valid responses, but the selected values do " +
+                "not vary enough to produce a meaningful comparison."
+            );
+            return;
+        }
+
+        showChart();
         chartLegend.style.display = "flex";
 
-        const points = rows
-            .map(row => ({
-                x: getColumn(row, selectedColumn),
-                y: getColumn(row, "GPA")
-            }))
-            .filter(point =>
-                Number.isFinite(point.x) &&
-                Number.isFinite(point.y)
-            );
-
         const regression = calculateRegression(points);
+        if (!Number.isFinite(regression.correlation)) {
+            showMessage(
+                "The selected values do not produce a valid correlation. " +
+                "More varied valid responses are needed."
+            );
+            return;
+        }
 
         if (scatterChart) {
             scatterChart.destroy();
@@ -147,16 +250,60 @@ function createScatterCharts(rows) {
     }
 
     function updateChronotypeChart(title) {
-        const groups = [...new Set(rows
-            .map(row => getTextColumn(row, "LarkOwl"))
-            .filter(Boolean))];
-        const averages = groups.map(group => {
-            const gpas = rows
-                .filter(row => getTextColumn(row, "LarkOwl") === group)
-                .map(row => getColumn(row, "GPA"));
-            return gpas.reduce((sum, gpa) => sum + gpa, 0) / gpas.length;
-        });
+        const validRows = [];
+        const groups = [];
+        const points = [];
 
+        for (let i = 0; i < rows.length; i += 1) {
+            const row = rows[i];
+            const gpa = validNumber(row.GPA, "GPA");
+
+            if ((row.LarkOwl === "Lark" || row.LarkOwl === "Owl" ||
+                row.LarkOwl === "Neither") && gpa !== null) {
+                validRows.push(row);
+                points.push({ x: row.LarkOwl, y: gpa });
+
+                let groupAlreadyAdded = false;
+                for (const group of groups) {
+                    if (group === row.LarkOwl) {
+                        groupAlreadyAdded = true;
+                        break;
+                    }
+                }
+                if (!groupAlreadyAdded) {
+                    groups.push(row.LarkOwl);
+                }
+            }
+        }
+
+        const message = getEligibilityMessage(points);
+        if (message) {
+            showMessage(message);
+            return;
+        }
+
+        if (groups.length < 2) {
+            showMessage(
+                "At least two chronotype groups with valid GPA values are needed " +
+                "for a meaningful comparison."
+            );
+            return;
+        }
+        const averages = [];
+        for (let groupIndex = 0; groupIndex < groups.length; groupIndex += 1) {
+            let totalGpa = 0;
+            let groupCount = 0;
+
+            for (let rowIndex = 0; rowIndex < validRows.length; rowIndex += 1) {
+                if (validRows[rowIndex].LarkOwl === groups[groupIndex]) {
+                    totalGpa += validNumber(validRows[rowIndex].GPA, "GPA");
+                    groupCount += 1;
+                }
+            }
+            averages.push(totalGpa / groupCount);
+        }
+
+        showChart();
         if (scatterChart) {
             scatterChart.destroy();
         }
@@ -201,17 +348,96 @@ function createScatterCharts(rows) {
             "Chronotype is categorical, so a Pearson correlation is not appropriate.";
     }
 
+    async function loadSelectedSchool() {
+        const school = schoolSelect.value;
+        if (!school) {
+            rows = [];
+            showMessage("No school responses are available yet.");
+            return;
+        }
+
+        showMessage("Loading valid responses for this school...");
+        try {
+            const response = await fetch(
+                `/api/school-submissions?school=${encodeURIComponent(school)}`
+            );
+            const result = await response.json();
+            if (!response.ok) {
+                throw new Error(result.error || `Unable to load school data (${response.status}).`);
+            }
+            if (!Array.isArray(result)) {
+                throw new Error("The school data response has an unexpected format.");
+            }
+
+            rows = result;
+            updateScatterChart();
+        } catch (error) {
+            console.error("School responses could not be loaded.", error);
+            showMessage(
+                "Could not load school responses. Start the website with npm start " +
+                "and try again."
+            );
+        }
+    }
+
+    async function loadSchools() {
+        try {
+            const response = await fetch("/api/schools");
+            const schools = await response.json();
+            if (!response.ok) {
+                throw new Error(`Unable to load schools (${response.status}).`);
+            }
+            if (!Array.isArray(schools)) {
+                throw new Error("The school list response has an unexpected format.");
+            }
+
+            schoolSelect.replaceChildren();
+            for (const school of schools) {
+                const option = document.createElement("option");
+                option.value = school;
+                option.textContent = school;
+                schoolSelect.append(option);
+            }
+
+            if (schools.length === 0) {
+                const option = document.createElement("option");
+                option.value = "";
+                option.textContent = "No schools have responses yet";
+                schoolSelect.append(option);
+                showMessage("No school responses are available yet.");
+                return;
+            }
+
+            await loadSelectedSchool();
+        } catch (error) {
+            console.error("School names could not be loaded.", error);
+            schoolSelect.replaceChildren();
+            const option = document.createElement("option");
+            option.value = "";
+            option.textContent = "Unable to load schools";
+            schoolSelect.append(option);
+            showMessage(
+                "Could not load the school list. Start the website with npm start " +
+                "and try again."
+            );
+        }
+    }
+
+    schoolSelect.addEventListener("change", loadSelectedSchool);
     select.addEventListener("change", updateScatterChart);
-    updateScatterChart();
+    window.addEventListener("school-submission-saved", loadSchools);
+    loadSchools();
 
     if (zoomRange && resetZoom) {
         zoomRange.oninput = () => {
-            scatterChart.resetZoom();
-            scatterChart.zoom(Number(zoomRange.value));
+            if (scatterChart) {
+                scatterChart.resetZoom();
+                scatterChart.zoom(Number(zoomRange.value));
+            }
         };
 
         resetZoom.onclick = () => {
-            scatterChart.resetZoom();
+            if (scatterChart) scatterChart.resetZoom();
             zoomRange.value = "1";
         };
     }
@@ -228,18 +454,29 @@ function getCorrelationStrength(correlation) {
 
 function calculateRegression(points) {
     const n = points.length;
-    const meanX = points.reduce((sum, point) => sum + point.x, 0) / n;
-    const meanY = points.reduce((sum, point) => sum + point.y, 0) / n;
+    let totalX = 0;
+    let totalY = 0;
+    for (const point of points) {
+        totalX += point.x;
+        totalY += point.y;
+    }
+
+    const meanX = totalX / n;
+    const meanY = totalY / n;
 
     let numerator = 0;
     let denominator = 0;
     let varianceY = 0;
+    let minX = points[0].x;
+    let maxX = points[0].x;
 
-    points.forEach(point => {
+    for (const point of points) {
         numerator += (point.x - meanX) * (point.y - meanY);
         denominator += (point.x - meanX) ** 2;
         varianceY += (point.y - meanY) ** 2;
-    });
+        if (point.x < minX) minX = point.x;
+        if (point.x > maxX) maxX = point.x;
+    }
 
     const slope = numerator / denominator;
     const intercept = meanY - slope * meanX;
@@ -249,7 +486,7 @@ function calculateRegression(points) {
         slope,
         intercept,
         correlation,
-        minX: Math.min(...points.map(point => point.x)),
-        maxX: Math.max(...points.map(point => point.x))
+        minX,
+        maxX
     };
 }

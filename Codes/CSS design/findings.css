@@ -92,11 +92,17 @@
 }
 
 .habit-selector {
-    min-width: 320px;
+    min-width: 220px;
     padding: 14px 18px;
     border: 1px solid #c8ddfa;
     border-radius: 16px;
     background: rgb(237 246 255 / 85%);
+}
+
+.findings-selectors {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(220px, 1fr));
+    gap: 12px;
 }
 
 .habit-selector select {
@@ -165,8 +171,21 @@
 }
 
 .scatter-chart-container {
+    position: relative;
     height: 390px;
     padding: 20px 30px;
+}
+
+.findings-message {
+    display: none;
+    position: absolute;
+    inset: 20px 30px;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    color: #36577f;
+    line-height: 1.6;
+    text-align: center;
 }
 
 .scatter-chart-container canvas {
@@ -313,6 +332,7 @@
 
 @media (max-width: 800px) {
     .findings-heading,
+    .findings-selectors,
     .findings-results {
         grid-template-columns: 1fr;
         display: grid;
@@ -363,6 +383,10 @@
 
     .habit-selector {
         padding: 12px 14px;
+    }
+
+    .findings-selectors {
+        grid-template-columns: 1fr;
     }
 
     .chart-heading {
