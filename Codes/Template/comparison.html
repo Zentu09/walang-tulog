@@ -13,6 +13,7 @@
         <link rel="stylesheet" href="../CSS design/comparison.css">
         <link rel="stylesheet" href="../css/all.min.css">
         <link rel="stylesheet" href="../CSS design/dark-mode.css">
+        <link rel="stylesheet" href="../CSS design/recommendation.css">
     </head>
     <body>
         <section class="header-section">
@@ -79,6 +80,18 @@
                             <small>Only used to show a comparison with the similar-pattern group average. For this comparison only, we provisionally convert it linearly (1.00 → 4.00; 5.00 → 0.00); grading equivalencies vary by school.</small>
                             <output id="gpaConversionPreview" class="gpa-conversion-preview" aria-live="polite"></output>
                         </label>
+                        <label class="age-group-field">
+                            Age group
+                            <select name="ageGroup" id="ageGroup" required>
+                                <option value="" selected disabled>Select your age group</option>
+                                <option value="6-12">6-12 years</option>
+                                <option value="13-18">13-18 years</option>
+                                <option value="18-60">18-60 years</option>
+                                <option value="61-64">61-64 years</option>
+                                <option value="65+">65+ years</option>
+                            </select>
+                            <small>Used only for the sleep recommendation. It stays in your browser and is not stored.</small>
+                        </label>
                     </div>
 
                     <div class="duration-preview" aria-live="polite">
@@ -127,7 +140,46 @@
             </section>
         </main>
 
+
+        <button type="button" id="recoButton" class="reco-fab" aria-label="Open sleep recommendation" aria-haspopup="dialog" aria-controls="recoPanel" aria-expanded="false" hidden>
+            <i class="fa-solid fa-moon" aria-hidden="true"></i>
+        </button>
+
+        <div id="recoOverlay" class="reco-overlay" hidden>
+            <div id="recoPanel" class="reco-panel" role="dialog" aria-modal="true" aria-labelledby="recoTitle" tabindex="-1">
+                <div class="reco-panel-head">
+                    <h2 id="recoTitle">Sleep recommendation</h2>
+                    <button type="button" id="recoClose" class="reco-close" aria-label="Close sleep recommendation">&times;</button>
+                </div>
+
+                <p class="reco-scope">These recommendations come from public health guidelines and are separate from this study’s GPA findings.</p>
+
+                <h3>Recommended sleep by age</h3>
+                <div class="reco-table-wrap">
+                    <table class="reco-table" id="recoTable">
+                        <thead>
+                            <tr><th scope="col">Age group</th><th scope="col">Recommended sleep per 24 hours</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr data-age="6-12"><th scope="row">6-12 years</th><td>9-12 hours</td></tr>
+                            <tr data-age="13-18"><th scope="row">13-18 years</th><td>8-10 hours</td></tr>
+                            <tr data-age="18-60"><th scope="row">18-60 years</th><td>7 or more hours</td></tr>
+                            <tr data-age="61-64"><th scope="row">61-64 years</th><td>7-9 hours</td></tr>
+                            <tr data-age="65+"><th scope="row">65+ years</th><td>7-8 hours</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="reco-source">Source: <a href="https://www.cdc.gov/sleep/about/index.html" target="_blank" rel="noopener noreferrer">Centers for Disease Control and Prevention (CDC), How Much Sleep Do I Need?</a>, based on American Academy of Sleep Medicine recommendations.</p>
+
+                <h3>Your sleep</h3>
+                <div id="recoBody" class="reco-body"></div>
+
+                <p class="reco-note">This is general information, not medical advice.</p>
+            </div>
+        </div>
+
         <script src="../Js/comparison.js"></script>
+        <script src="../Js/recommendation.js"></script>
         <script src="../Js/mobile-navigation.js"></script>
         <script src="../Js/theme-toggle.js"></script>
     </body>
