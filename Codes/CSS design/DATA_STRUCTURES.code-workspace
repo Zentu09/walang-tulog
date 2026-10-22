@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../../../.."
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "CODING PROJECTS"
+	},
+	"launch": {
+		"version": "0.2.0",
+		"configurations": []
+	}
+}

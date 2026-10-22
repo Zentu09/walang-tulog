@@ -125,6 +125,34 @@ body.intro-locked {
     display: block;
 }
 
+.theme-toggle {
+    display: inline-flex;
+    min-height: 42px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-left: 18px;
+    padding: 8px 12px;
+    border: 1px solid rgb(255 255 255 / 45%);
+    border-radius: 22px;
+    background: rgb(255 255 255 / 10%);
+    color: #fff;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.theme-toggle:hover {
+    background: rgb(255 255 255 / 20%);
+}
+
+.theme-toggle:focus-visible {
+    outline: 3px solid #c7d8fd;
+    outline-offset: 2px;
+}
+
 /* 
 ========================================
             MAIN PAGE
@@ -394,7 +422,14 @@ body.intro-locked {
 
     .nav-toggle {
         display: block;
+        margin-left: 10px;
+    }
+
+    .theme-toggle {
+        min-height: 40px;
         margin-left: auto;
+        padding: 7px 10px;
+        font-size: 0.8rem;
     }
 
     .ulo.nav-open .nav-toggle span:first-child {
@@ -526,6 +561,22 @@ body.intro-locked {
 }
 
 @media (max-width: 380px) {
+    .logo img {
+        width: 100px;
+    }
+
+    .nav-toggle {
+        width: 40px;
+        flex: 0 0 40px;
+        margin-left: 6px;
+    }
+
+    .theme-toggle {
+        gap: 5px;
+        padding: 6px 7px;
+        font-size: 0.72rem;
+    }
+
     .explore {
         min-height: max(450px, calc(100svh - 72px));
     }

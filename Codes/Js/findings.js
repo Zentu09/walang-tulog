@@ -127,6 +127,8 @@ function createScatterCharts(rows) {
                 }
             }
         );
+        applySleepStudyChartTheme(scatterChart);
+        scatterChart.update("none");
 
         const correlation = regression.correlation;
         const strength = getCorrelationStrength(correlation);
@@ -188,6 +190,8 @@ function createScatterCharts(rows) {
                 }
             }
         });
+        applySleepStudyChartTheme(scatterChart);
+        scatterChart.update("none");
 
         document.getElementById("scatterTitle").textContent =
             `Average GPA by ${title}`;
