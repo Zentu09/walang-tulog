@@ -1,10 +1,13 @@
 const http = require("node:http");
 const fs = require("node:fs/promises");
 const path = require("node:path");
+const ExcelJS = require("exceljs");
 
 const PROJECT_FOLDER = __dirname;
 const WEBSITE_FOLDER = path.join(PROJECT_FOLDER, "Codes");
-const DATA_FILE = process.env.SLEEP_STUDY_DATA_FILE ||
+const DATA_FILE = process.env.SLEEP_STUDY_EXCEL_FILE ||
+    path.join(PROJECT_FOLDER, "data", "SchoolSubmissions.xlsx");
+const LEGACY_CSV_FILE = process.env.SLEEP_STUDY_CSV_FILE ||
     path.join(PROJECT_FOLDER, "data", "SchoolSubmissions.csv");
 const PORT = Number(process.env.PORT) || 3000;
 
@@ -74,14 +77,6 @@ function parseCsv(csvText) {
         if (rowHasData) nonEmptyRows.push(csvRow);
     }
     return nonEmptyRows;
-}
-
-function formatCsvValue(value) {
-    const text = String(value);
-    if (/[",\r\n]/u.test(text)) {
-        return `"${text.replace(/"/gu, '""')}"`;
-    }
-    return text;
 }
 
 function normalizeSchoolName(value) {
@@ -162,28 +157,115 @@ function calculateSleepDuration(bedtime, riseTime) {
 }
 
 async function readSubmissions() {
-    const csvText = await fs.readFile(DATA_FILE, "utf8");
-    const rows = parseCsv(csvText);
-    const header = rows[0];
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.readFile(DATA_FILE);
+    const worksheet = workbook.getWorksheet("Submissions");
 
-    if (!header || header.join(",") !== CSV_HEADERS.join(",")) {
-        throw new Error("The submissions CSV has an unexpected header.");
+    if (!worksheet) {
+        throw new Error("The Excel workbook is missing its Submissions sheet.");
+    }
+
+    const headers = [];
+    for (let column = 1; column <= CSV_HEADERS.length; column += 1) {
+        headers.push(worksheet.getCell(1, column).value);
+    }
+    if (headers.join(",") !== CSV_HEADERS.join(",")) {
+        throw new Error("The Excel workbook has an unexpected header.");
     }
 
     const submissions = [];
-    for (let rowIndex = 1; rowIndex < rows.length; rowIndex += 1) {
-        const values = rows[rowIndex];
-        if (values.length !== CSV_HEADERS.length) {
-            throw new Error("A row in the submissions CSV has the wrong number of fields.");
-        }
+    for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber += 1) {
         const submission = {};
-        for (let columnIndex = 0; columnIndex < CSV_HEADERS.length; columnIndex += 1) {
-            const columnName = CSV_HEADERS[columnIndex];
-            submission[columnName] = values[columnIndex];
+        let hasData = false;
+
+        for (let column = 1; column <= CSV_HEADERS.length; column += 1) {
+            const value = worksheet.getCell(rowNumber, column).value;
+            submission[CSV_HEADERS[column - 1]] = value;
+            if (value !== null && value !== undefined && value !== "") {
+                hasData = true;
+            }
         }
-        submissions.push(submission);
+
+        if (hasData) {
+            submissions.push(submission);
+        }
     }
     return submissions;
+}
+
+function getExcelValue(column, value) {
+    if (column === "SubmissionId" || column === "School" ||
+        column === "LarkOwl") {
+        return value;
+    }
+    if (value === "") return null;
+
+    const number = Number(value);
+    return Number.isFinite(number) ? number : value;
+}
+
+async function createExcelFile() {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Submissions");
+    worksheet.addRow(CSV_HEADERS);
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.views = [{ state: "frozen", ySplit: 1 }];
+
+    for (let column = 1; column <= CSV_HEADERS.length; column += 1) {
+        worksheet.getColumn(column).width = column === 2 ? 24 : 18;
+    }
+
+    let csvExists = true;
+    try {
+        await fs.access(LEGACY_CSV_FILE);
+    } catch (error) {
+        if (error.code === "ENOENT") {
+            csvExists = false;
+        } else {
+            throw error;
+        }
+    }
+
+    if (csvExists) {
+        const csvText = await fs.readFile(LEGACY_CSV_FILE, "utf8");
+        const rows = parseCsv(csvText);
+        if (!rows[0] || rows[0].join(",") !== CSV_HEADERS.join(",")) {
+            throw new Error("The previous submissions CSV has an unexpected header.");
+        }
+
+        for (let rowNumber = 1; rowNumber < rows.length; rowNumber += 1) {
+            const values = rows[rowNumber];
+            if (values.length !== CSV_HEADERS.length) {
+                throw new Error(
+                    "A row in the previous submissions CSV has the wrong number of fields."
+                );
+            }
+
+            const excelValues = [];
+            for (let column = 0; column < CSV_HEADERS.length; column += 1) {
+                excelValues.push(getExcelValue(CSV_HEADERS[column], values[column]));
+            }
+            worksheet.addRow(excelValues);
+        }
+    }
+
+    worksheet.autoFilter = {
+        from: "A1",
+        to: `L${worksheet.rowCount}`
+    };
+    await workbook.xlsx.writeFile(DATA_FILE);
+}
+
+async function initializeExcelFile() {
+    await fs.mkdir(path.dirname(DATA_FILE), { recursive: true });
+
+    try {
+        await fs.access(DATA_FILE);
+        await readSubmissions();
+    } catch (error) {
+        if (error.code !== "ENOENT") throw error;
+        await createExcelFile();
+    }
 }
 
 async function saveSubmission(submission) {
@@ -213,12 +295,19 @@ async function saveSubmission(submission) {
         }
         if (sameSchool) submission.School = sameSchool.School;
 
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.readFile(DATA_FILE);
+        const worksheet = workbook.getWorksheet("Submissions");
         const values = [];
         for (const header of CSV_HEADERS) {
-            values.push(formatCsvValue(submission[header]));
+            values.push(submission[header]);
         }
-        const newLine = values.join(",") + "\n";
-        await fs.appendFile(DATA_FILE, newLine, "utf8");
+        worksheet.addRow(values);
+        worksheet.autoFilter = {
+            from: "A1",
+            to: `L${worksheet.rowCount}`
+        };
+        await workbook.xlsx.writeFile(DATA_FILE);
 
         return {
             school: submission.School,
@@ -402,17 +491,7 @@ async function handleRequest(request, response) {
 }
 
 async function startServer(port = PORT) {
-    const dataFolder = path.dirname(DATA_FILE);
-    await fs.mkdir(dataFolder, { recursive: true });
-
-    try {
-        await fs.access(DATA_FILE);
-    } catch (error) {
-        if (error.code !== "ENOENT") throw error;
-        await fs.writeFile(DATA_FILE, `${CSV_HEADERS.join(",")}\n`, "utf8");
-    }
-
-    await readSubmissions();
+    await initializeExcelFile();
 
     const server = http.createServer((request, response) => {
         handleRequest(request, response).catch(error => {

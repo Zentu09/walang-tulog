@@ -86,12 +86,12 @@ The website uses:
 - Chart.js for graphs and trend visualization
 - Font Awesome icons for UI elements
 - Node.js built-in modules for the submission server
+- ExcelJS for creating the submission workbook
 
 The performance charts and Compare Sleep feature load the original CSV in the
-browser. The Findings chart uses new submissions for one selected school, loaded
-through the Node.js server, and checks each selected sleep measure against GPA.
-It does not overwrite `Codes/Js/SleepStudy.csv` or change the Compare Sleep
-workflow.
+browser. New form responses are saved in `data/SchoolSubmissions.xlsx`. The
+Findings chart gets submissions for one selected school from the Node.js server.
+The original `Codes/Js/SleepStudy.csv` and Compare Sleep workflow stay unchanged.
 
 ## 5. Data flow in the system
 
@@ -106,7 +106,9 @@ The system follows a simple workflow:
 
 The submission workflow is separate: the form sends its response to the local
 Node.js server, which checks required fields, normalizes the school name, avoids
-retry duplicates, and appends the response to the new submissions CSV.
+retry duplicates, and adds the response as a new row in the Excel workbook. If
+the workbook does not exist yet, existing submission rows from
+`data/SchoolSubmissions.csv` are copied into it. The CSV file is kept unchanged.
 
 Important logic is handled in the JavaScript files:
 - `Codes/Js/data.js` parses and cleans the CSV.
@@ -114,7 +116,13 @@ Important logic is handled in the JavaScript files:
 - `Codes/Js/findings.js` checks the selected school's submission data, enforces
   the minimum valid-response count, and generates the chart and correlation.
 - `server.js` returns only the analysis fields for the selected school.
+- `data/SchoolSubmissions.xlsx` stores new submissions in one worksheet, with
+  one response per row.
 - `Codes/Template/index.html` and `Codes/Template/study.html` provide the page structure and content.
+
+To view submitted data, stop the server with Ctrl+C and open
+`data/SchoolSubmissions.xlsx` in Excel. Close the workbook before starting the
+server again so the server can save new responses.
 
 ## 6. How the data is analyzed
 
@@ -172,7 +180,7 @@ This project is a well-structured academic dashboard that turns student sleep da
 - Insightful interpretation of data
 
 ### Limitations
-- Submissions are stored in a local CSV file; this is not a hosted database.
+- Submissions are stored in a local Excel workbook; this is not a hosted database.
 - The submission server listens on the local computer and must be hosted or configured on an approved network for students on other devices.
 - The original performance summary and Compare Sleep feature still use the
   static study CSV.

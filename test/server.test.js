@@ -3,9 +3,19 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { test, before, after } = require("node:test");
+const ExcelJS = require("exceljs");
 
 const temporaryFolder = fs.mkdtempSync(path.join(os.tmpdir(), "sleep-study-test-"));
-process.env.SLEEP_STUDY_DATA_FILE = path.join(temporaryFolder, "responses.csv");
+const excelFile = path.join(temporaryFolder, "responses.xlsx");
+const csvFile = path.join(temporaryFolder, "old-responses.csv");
+process.env.SLEEP_STUDY_EXCEL_FILE = excelFile;
+process.env.SLEEP_STUDY_CSV_FILE = csvFile;
+
+const oldCsvContent = [
+    "SubmissionId,School,GPA,WeekdayBed,WeekdayRise,WeekdaySleep,WeekendBed,WeekendRise,WeekendSleep,PoorSleepQuality,LarkOwl,SocialJetlag",
+    "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa,Old School,3,25,9,8,26,10,8,5,Lark,1"
+].join("\n") + "\n";
+fs.writeFileSync(csvFile, oldCsvContent, "utf8");
 
 const { startServer, validateSubmission, getSchoolKey } = require("../server");
 
@@ -92,7 +102,7 @@ test("responses append, reuse school spelling, and ignore retry duplicates", asy
     assert.equal((await secondResponse.json()).school, "ABC College");
 
     const schoolsResponse = await fetch(`${baseUrl}/api/schools`);
-    assert.deepEqual(await schoolsResponse.json(), ["ABC College"]);
+    assert.deepEqual(await schoolsResponse.json(), ["Old School", "ABC College"]);
 
     const schoolDataResponse = await fetch(
         `${baseUrl}/api/school-submissions?school=abc%20college`
@@ -101,7 +111,7 @@ test("responses append, reuse school spelling, and ignore retry duplicates", asy
     assert.equal(schoolDataResponse.status, 200);
     assert.equal(schoolData.length, 2);
     assert.equal(schoolData[0].School, "ABC College");
-    assert.equal(schoolData[0].GPA, "3.25");
+    assert.equal(schoolData[0].GPA, 3.25);
     assert.equal("SubmissionId" in schoolData[0], false);
 
     const otherSchoolResponse = await fetch(
@@ -114,9 +124,14 @@ test("responses append, reuse school spelling, and ignore retry duplicates", asy
     );
     assert.equal(invalidSchoolResponse.status, 400);
 
-    const csv = fs.readFileSync(process.env.SLEEP_STUDY_DATA_FILE, "utf8");
-    assert.equal(csv.trim().split(/\r?\n/u).length, 3);
-    assert.match(csv, /,ABC College,/u);
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.readFile(excelFile);
+    const worksheet = workbook.getWorksheet("Submissions");
+    assert.equal(worksheet.rowCount, 4);
+    assert.equal(worksheet.getCell(2, 2).value, "Old School");
+    assert.equal(worksheet.getCell(3, 2).value, "ABC College");
+    assert.equal(worksheet.getCell(3, 3).value, 3.25);
+    assert.equal(fs.readFileSync(csvFile, "utf8"), oldCsvContent);
 });
 
 test("saved sleep durations use the values derived by the server", () => {
@@ -136,6 +151,6 @@ test("the website is served but the private submissions file is not", async () =
     assert.equal(findingsPage.status, 200);
     assert.match(await findingsPage.text(), /id="findings"/u);
 
-    const dataResponse = await fetch(`${baseUrl}/data/responses.csv`);
+    const dataResponse = await fetch(`${baseUrl}/data/responses.xlsx`);
     assert.equal(dataResponse.status, 404);
 });
