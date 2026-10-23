@@ -123,6 +123,49 @@ html[data-theme="dark"] #findings.fd,
     color: var(--fd-accent);
 }
 
+/* ---------- School dataset filter ---------- */
+
+.fd-school-filter {
+    display: grid;
+    gap: 8px;
+    max-width: 560px;
+    padding: 16px 18px;
+    border: 1px solid var(--fd-line);
+    border-radius: 12px;
+    background: var(--fd-surface);
+}
+
+.fd-school-filter label {
+    color: var(--fd-ink);
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.fd-school-filter input {
+    display: block;
+    width: 100%;
+    min-height: 44px;
+    margin-top: 8px;
+    padding: 8px 10px;
+    border: 1px solid var(--fd-line);
+    border-radius: 10px;
+    background: var(--fd-surface);
+    color: var(--fd-ink);
+    font: inherit;
+}
+
+.fd-school-hint,
+.fd-school-status {
+    margin: 0;
+    color: var(--fd-muted);
+    font-size: 0.85rem;
+    line-height: 1.45;
+}
+
+.fd-school-status[data-state="error"] {
+    color: #a32727;
+}
+
 /* ---------- Habit picker ---------- */
 
 .fd-picker {

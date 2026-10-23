@@ -147,23 +147,11 @@ function createScatterCharts(rows) {
 
     /* ---------- Data ---------- */
 
-    const gpas = rows.map(row => getColumn(row, "GPA")).filter(Number.isFinite);
-    const gpaMin = gpas.length ? Math.min(2, Math.floor(Math.min(...gpas) * 2) / 2) : 2;
-
-    const stats = {};
-    HABITS.filter(habit => habit.kind !== "category").forEach(habit => {
-        const points = rows
-            .map(row => ({ x: getColumn(row, habit.key), y: getColumn(row, "GPA") }))
-            .filter(point => Number.isFinite(point.x) && Number.isFinite(point.y));
-
-        stats[habit.key] = { points, regression: calculateRegression(points) };
-    });
-
-    const ranked = HABITS
-        .filter(habit => habit.kind !== "category")
-        .map(habit => ({ habit, r: stats[habit.key].regression.correlation }))
-        .filter(item => Number.isFinite(item.r))
-        .sort((a, b) => Math.abs(b.r) - Math.abs(a.r));
+    const originalRows = rows;
+    let currentRows = rows;
+    let gpaMin = 2;
+    let stats = {};
+    let ranked = [];
 
     /* ---------- State and elements ---------- */
 
@@ -172,6 +160,31 @@ function createScatterCharts(rows) {
 
     const zoomRange = $("zoomRange");
     const resetButton = $("resetZoom");
+    const schoolInput = $("schoolFindingsSchools");
+    const schoolOptions = $("schoolFindingsSchoolOptions");
+    const schoolStatus = $("schoolDatasetStatus");
+    const schoolRowsCache = new Map();
+    let schoolRequestNumber = 0;
+
+    function calculateDatasetStats(datasetRows) {
+        const gpas = datasetRows.map(row => getColumn(row, "GPA")).filter(Number.isFinite);
+        gpaMin = gpas.length
+            ? Math.min(2, Math.floor(Math.min(...gpas) * 2) / 2)
+            : 2;
+        stats = {};
+        HABITS.filter(habit => habit.kind !== "category").forEach(habit => {
+            const points = datasetRows
+                .map(row => ({ x: getColumn(row, habit.key), y: getColumn(row, "GPA") }))
+                .filter(point => Number.isFinite(point.x) && Number.isFinite(point.y));
+
+            stats[habit.key] = { points, regression: calculateRegression(points) };
+        });
+        ranked = HABITS
+            .filter(habit => habit.kind !== "category")
+            .map(habit => ({ habit, r: stats[habit.key].regression.correlation }))
+            .filter(item => Number.isFinite(item.r))
+            .sort((a, b) => Math.abs(b.r) - Math.abs(a.r));
+    }
 
     function setStatus(message) {
         const status = $("fdChartStatus");
@@ -373,7 +386,7 @@ function createScatterCharts(rows) {
         const order = ["lark", "neither", "owl"];
         const byGroup = new Map();
 
-        rows.forEach(row => {
+        currentRows.forEach(row => {
             const group = getTextColumn(row, "LarkOwl");
             const gpa = getColumn(row, "GPA");
 
@@ -551,7 +564,7 @@ function createScatterCharts(rows) {
         const title = $("fdConclusionTitle");
         const body = $("fdConclusionBody");
 
-        $("fdSampleSize").textContent = rows.length;
+        $("fdSampleSize").textContent = currentRows.length;
 
         if (!ranked.length) {
             title.textContent = "No correlations to report";
@@ -577,9 +590,92 @@ function createScatterCharts(rows) {
 
         title.textContent = headline;
         body.replaceChildren(
-            el("p", "", `Across ${rows.length} students, correlations with GPA ranged from ${fmtSigned(lowest)} to ${fmtSigned(highest)}. ${strongest.habit.label} showed the strongest relationship (r = ${fmtSigned(strongest.r)}).`),
+            el("p", "", `Across ${currentRows.length} students, correlations with GPA ranged from ${fmtSigned(lowest)} to ${fmtSigned(highest)}. ${strongest.habit.label} showed the strongest relationship (r = ${fmtSigned(strongest.r)}).`),
             el("p", "", followUp)
         );
+    }
+
+    function setDataset(datasetRows, schoolName) {
+        currentRows = datasetRows;
+        calculateDatasetStats(currentRows);
+        buildRanking();
+        buildConclusion();
+        render();
+        schoolStatus.textContent = schoolName
+            ? `Showing ${currentRows.length} submissions from ${schoolName}.`
+            : "Showing the original study dataset.";
+        schoolStatus.removeAttribute("data-state");
+    }
+
+    async function loadSchoolOptions() {
+        try {
+            const response = await fetch("/api/schools");
+            if (!response.ok) {
+                throw new Error(`Unable to load school names (${response.status}).`);
+            }
+            const schools = await response.json();
+            if (!Array.isArray(schools) ||
+                schools.some(school => typeof school !== "string")) {
+                throw new Error("The school list returned by the server is invalid.");
+            }
+            schools.forEach(school => {
+                const option = document.createElement("option");
+                option.value = school;
+                schoolOptions.append(option);
+            });
+        } catch (error) {
+            console.error("School filter options could not be loaded.", error);
+            schoolStatus.textContent =
+                `School options could not be loaded: ${error.message}`;
+            schoolStatus.dataset.state = "error";
+        }
+    }
+
+    async function selectSchoolDataset() {
+        const requestNumber = ++schoolRequestNumber;
+        const enteredSchool = schoolInput.value.trim();
+        if (!enteredSchool) {
+            setDataset(originalRows, "");
+            return;
+        }
+
+        const school = [...schoolOptions.options]
+            .map(option => option.value)
+            .find(name => name.toLocaleLowerCase("en-US") ===
+                enteredSchool.toLocaleLowerCase("en-US"));
+        if (!school) {
+            schoolStatus.textContent = "Choose a school from the suggestions, or leave the field blank for the original study dataset.";
+            schoolStatus.dataset.state = "error";
+            return;
+        }
+
+        schoolStatus.textContent = `Loading submissions from ${school}…`;
+        schoolStatus.removeAttribute("data-state");
+        try {
+            let schoolRows = schoolRowsCache.get(school);
+            if (!schoolRows) {
+                const response = await fetch(
+                    `/api/school-submissions?school=${encodeURIComponent(school)}`
+                );
+                if (!response.ok) {
+                    const result = await response.json();
+                    throw new Error(result.error || `Unable to load ${school}.`);
+                }
+                const result = await response.json();
+                if (!Array.isArray(result)) {
+                    throw new Error("The school response data is invalid.");
+                }
+                schoolRows = cleanRows(result);
+                schoolRowsCache.set(school, schoolRows);
+            }
+            if (requestNumber !== schoolRequestNumber) return;
+            setDataset(schoolRows, school);
+        } catch (error) {
+            if (requestNumber !== schoolRequestNumber) return;
+            console.error("School findings could not be loaded.", error);
+            schoolStatus.textContent = `School data could not be loaded: ${error.message}`;
+            schoolStatus.dataset.state = "error";
+        }
     }
 
     /* ---------- Zoom controls ---------- */
@@ -605,10 +701,18 @@ function createScatterCharts(rows) {
 
     /* ---------- Start ---------- */
 
+    calculateDatasetStats(currentRows);
     buildPicker();
     buildRanking();
     buildConclusion();
     render();
+    if (schoolInput && schoolOptions && schoolStatus) {
+        schoolInput.addEventListener("change", selectSchoolDataset);
+        schoolInput.addEventListener("blur", () => {
+            if (!schoolInput.value.trim()) selectSchoolDataset();
+        });
+        loadSchoolOptions();
+    }
 
     // Redraw with the right colors when the theme changes.
     window.addEventListener("sleep-study-theme-change", render);
