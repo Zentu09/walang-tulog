@@ -50,6 +50,50 @@
     padding: 28px;
 }
 
+.comparison-dataset {
+    display: flex;
+    max-width: 620px;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 8px;
+    color: #214878;
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.comparison-dataset select {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 46px;
+    padding: 10px 12px;
+    border: 1px solid #c6daf4;
+    border-radius: 10px;
+    background: #fff;
+    color: #183765;
+    font: inherit;
+}
+
+.comparison-dataset select:focus {
+    outline: 3px solid rgb(40 116 223 / 22%);
+    border-color: #2874df;
+}
+
+.comparison-dataset small,
+.comparison-dataset-status {
+    color: #6681a5;
+    font-size: 0.82rem;
+    font-weight: 500;
+    line-height: 1.45;
+}
+
+.comparison-dataset-status {
+    margin: 4px 0 18px;
+}
+
+.comparison-dataset-status:empty {
+    display: none;
+}
+
 .comparison-fields {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));

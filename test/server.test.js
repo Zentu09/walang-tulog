@@ -160,7 +160,9 @@ test("the website is served but the private submissions file is not", async () =
 
     const comparisonPage = await fetch(`${baseUrl}/Codes/Template/comparison.html`);
     assert.equal(comparisonPage.status, 200);
-    assert.match(await comparisonPage.text(), /id="sleepComparisonForm"/u);
+    const comparison = await comparisonPage.text();
+    assert.match(comparison, /id="sleepComparisonForm"/u);
+    assert.match(comparison, /id="comparisonDataset"/u);
 
     for (const pagePath of [
         "/Codes/Template/index.html",

@@ -67,6 +67,15 @@
                 </div>
 
                 <form id="sleepComparisonForm" class="comparison-form">
+                    <label class="comparison-dataset" for="comparisonDataset">
+                        Compare with
+                        <select name="comparisonDataset" id="comparisonDataset">
+                            <option value="original">Original study dataset (St. Lawrence University)</option>
+                        </select>
+                        <small>School response groups are descriptive; smaller samples may not represent the whole school.</small>
+                    </label>
+                    <p id="comparisonDatasetStatus" class="comparison-dataset-status"
+                       role="status" aria-live="polite"></p>
                     <div class="comparison-fields">
                         <label>
                             Weekday bedtime
@@ -131,7 +140,7 @@
                     <div class="results-heading">
                         <div>
                             <span class="comparison-eyebrow">YOUR RESULTS</span>
-                            <h2>Your pattern compared with the study</h2>
+                            <h2 id="comparisonResultsTitle">Your pattern compared with the study</h2>
                         </div>
                         <p id="comparisonSampleSize"></p>
                     </div>
@@ -189,6 +198,7 @@
             </div>
         </div>
 
+        <script src="../Js/research-config.js"></script>
         <script src="../Js/comparison.js"></script>
         <script src="../Js/recommendation.js"></script>
         <script src="../Js/mobile-navigation.js"></script>

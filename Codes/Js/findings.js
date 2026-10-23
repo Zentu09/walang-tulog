@@ -653,8 +653,6 @@ function initializeSchoolFindings() {
     if (!schoolsElement || !measureElement || !statusElement ||
         !canvas || !chartContainer) return;
 
-    // Set only after the research team approves a threshold in its methodology.
-    const MINIMUM_VALID_RESPONSES_PER_SCHOOL = null;
     const ORIGINAL_DATASET_SCHOOL = "St. Lawrence University (original study dataset)";
     const measures = {
         WeekdaySleep: {

@@ -24,6 +24,9 @@ const COMPARISON_COLUMNS = [
 ];
 
 let comparisonRows = [];
+let originalComparisonRows = [];
+let comparisonDatasetLabel = "the original St. Lawrence University study";
+let comparisonSchoolRows = new Map();
 
 document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("sleepComparisonForm");
@@ -32,6 +35,10 @@ document.addEventListener("DOMContentLoaded", () => {
     form.addEventListener("input", updateDurationPreviews);
     form.addEventListener("submit", showSleepComparison);
     form.elements.phGpa.addEventListener("input", updateGpaConversionPreview);
+    document.getElementById("comparisonDataset").addEventListener(
+        "change",
+        selectComparisonDataset
+    );
     loadComparisonDataset();
 });
 
@@ -48,6 +55,8 @@ async function loadComparisonDataset() {
         if (comparisonRows.length === 0) {
             throw new Error("The study dataset has no complete student responses to compare.");
         }
+        originalComparisonRows = comparisonRows;
+        await loadComparisonSchools();
     } catch (cause) {
         console.error("Sleep comparison data could not be loaded.", cause);
         error.textContent =
@@ -55,6 +64,147 @@ async function loadComparisonDataset() {
         error.hidden = false;
         document.querySelector(".comparison-submit").disabled = true;
     }
+}
+
+async function loadComparisonSchools() {
+    const status = document.getElementById("comparisonDatasetStatus");
+    const selector = document.getElementById("comparisonDataset");
+
+    try {
+        const response = await fetch("/api/schools");
+        if (!response.ok) {
+            throw new Error(`Unable to load school names (${response.status}).`);
+        }
+        const schools = await response.json();
+        if (!Array.isArray(schools) ||
+            schools.some(school => typeof school !== "string")) {
+            throw new Error("The school list returned by the server is invalid.");
+        }
+
+        for (const school of schools) {
+            const option = document.createElement("option");
+            option.value = `school:${school}`;
+            option.textContent = school;
+            selector.append(option);
+        }
+    } catch (cause) {
+        console.error("School comparison options could not be loaded.", cause);
+        status.textContent =
+            "School responses could not be loaded. You can still compare with the original study dataset.";
+    }
+}
+
+async function selectComparisonDataset(event) {
+    const selector = event.currentTarget;
+    const status = document.getElementById("comparisonDatasetStatus");
+    const submitButton = document.querySelector(".comparison-submit");
+    const previousValue = selector.dataset.loadedValue || "original";
+    const selectedValue = selector.value;
+    document.getElementById("comparisonResults").hidden = true;
+
+    if (selectedValue === "original") {
+        comparisonRows = originalComparisonRows;
+        comparisonDatasetLabel = "the original St. Lawrence University study";
+        selector.dataset.loadedValue = selectedValue;
+        status.textContent = "";
+        return;
+    }
+
+    const school = selectedValue.slice("school:".length);
+    submitButton.disabled = true;
+    selector.disabled = true;
+    status.textContent = `Loading responses for ${school}…`;
+
+    try {
+        let rows = comparisonSchoolRows.get(school);
+        if (!rows) {
+            const response = await fetch(
+                `/api/school-submissions?school=${encodeURIComponent(school)}`
+            );
+            if (!response.ok) {
+                const result = await response.json();
+                throw new Error(result.error || `Unable to load ${school}.`);
+            }
+            rows = prepareSchoolComparisonRows(await response.json());
+            comparisonSchoolRows.set(school, rows);
+        }
+        if (rows.length === 0) {
+            throw new Error(`There are no complete responses for ${school} yet.`);
+        }
+        if (!Number.isSafeInteger(MINIMUM_VALID_RESPONSES_PER_SCHOOL) ||
+            MINIMUM_VALID_RESPONSES_PER_SCHOOL < 1) {
+            throw new Error(
+                `${school} has ${rows.length} complete responses. School comparisons ` +
+                "are unavailable until the research team approves a minimum response " +
+                "count in Codes/Js/research-config.js."
+            );
+        }
+        const required = Math.max(3, MINIMUM_VALID_RESPONSES_PER_SCHOOL);
+        if (rows.length < required) {
+            throw new Error(
+                `${school} has ${rows.length} complete responses; at least ${required} ` +
+                "are needed for this comparison."
+            );
+        }
+
+        comparisonRows = rows;
+        comparisonDatasetLabel = school;
+        selector.dataset.loadedValue = selectedValue;
+        status.textContent = "";
+    } catch (cause) {
+        console.error("Selected school responses could not be loaded.", cause);
+        selector.value = previousValue;
+        status.textContent = cause.message;
+    } finally {
+        submitButton.disabled = false;
+        selector.disabled = false;
+    }
+}
+
+function prepareSchoolComparisonRows(rows) {
+    if (!Array.isArray(rows)) {
+        throw new Error("The school response data is invalid.");
+    }
+
+    return rows.flatMap(row => {
+        const fields = [
+            "GPA",
+            "WeekdayBed",
+            "WeekdayRise",
+            "WeekdaySleep",
+            "WeekendBed",
+            "WeekendRise",
+            "WeekendSleep"
+        ];
+        const values = fields.map(field => Number(row[field]));
+        if (fields.some(field => row[field] === null || row[field] === "" ||
+            !Number.isFinite(Number(row[field])))) {
+            return [];
+        }
+
+        const [gpa, weekdayBed, weekdayRise, weekdaySleep,
+            weekendBed, weekendRise, weekendSleep] = values;
+        if (gpa < 0 || gpa > 4 ||
+            weekdayBed < 12 || weekdayBed >= 36 ||
+            weekendBed < 12 || weekendBed >= 36 ||
+            weekdayRise < 0 || weekdayRise >= 24 ||
+            weekendRise < 0 || weekendRise >= 24 ||
+            weekdaySleep <= 0 || weekdaySleep > 24 ||
+            weekendSleep <= 0 || weekendSleep > 24) {
+            return [];
+        }
+
+        return [{
+            GPA: gpa,
+            WeekdayBed: weekdayBed,
+            WeekdayRise: weekdayRise,
+            WeekdaySleep: weekdaySleep,
+            WeekendBed: weekendBed,
+            WeekendRise: weekendRise,
+            WeekendSleep: weekendSleep,
+            SocialJetlag: Math.abs(weekendRise - weekdayRise)
+        }];
+    });
 }
 
 function prepareComparisonRows(csvText) {
@@ -194,7 +344,9 @@ function renderSharedNote(metricContainer) {
         "comparisonSharedNote", "p", "comparison-shared-note", metricContainer, "after"
     );
     note.textContent =
-        "Good to know: in this study, sleep habits had only a small connection to GPA. Students with the same habits had very different GPAs, so these results can't tell you what your grades will be.";
+        `These summaries describe patterns in ${comparisonDatasetLabel}; they do ` +
+        "not show that sleep habits cause GPA differences. School response groups " +
+        "may not represent the whole school.";
 }
 
 function showSleepComparison(event) {
@@ -248,7 +400,9 @@ function showSleepComparison(event) {
     });
 
     document.getElementById("comparisonSampleSize").textContent =
-        `Based on responses from ${comparisonRows.length} students`;
+        `Based on ${comparisonRows.length} responses from ${comparisonDatasetLabel}`;
+    document.getElementById("comparisonResultsTitle").textContent =
+        `Your pattern compared with ${comparisonDatasetLabel}`;
     renderGpaBucket(userValues, convertedGpa, philippineGpa);
     document.getElementById("comparisonResults").hidden = false;
     document.getElementById("comparisonResults").scrollIntoView({
@@ -289,7 +443,7 @@ function getCorrelation(values, gpas) {
     });
 
     const denominator = Math.sqrt(sumXSquared * sumYSquared);
-    return denominator === 0 ? 0 : numerator / denominator;
+    return denominator === 0 ? NaN : numerator / denominator;
 }
 
 // Turns a percentile into a plain sentence.
@@ -311,13 +465,17 @@ function capitalize(text) {
 
 // One short, plain sentence about how this relates to GPA.
 function describeGpaLink(correlation, trend) {
+    if (!Number.isFinite(correlation)) {
+        return "There isn't enough variation in this response group to estimate a sleep-GPA association.";
+    }
+
     const size = Math.abs(correlation);
     if (size < 0.1) {
-        return "This made almost no difference to GPA in this study.";
+        return `This habit had almost no linear association with GPA in ${comparisonDatasetLabel}.`;
     }
     const amount = size < 0.3 ? "slightly" : "somewhat";
     const direction = correlation < 0 ? "lower" : "higher";
-    return `Students who ${trend} had ${amount} ${direction} GPAs on average. The difference is small, so it can't tell us much about you.`;
+    return `Students who ${trend} tended to have ${amount} ${direction} GPAs in ${comparisonDatasetLabel}. This is an association, not a cause.`;
 }
 
 function createMetricCard(label, userValue, kind, stats, correlation, sample, explainer, trend) {

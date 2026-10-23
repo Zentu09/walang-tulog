@@ -89,8 +89,9 @@ The website uses:
 - Node.js built-in modules for the submission server
 - ExcelJS for creating the submission workbook
 
-The performance charts and Compare Sleep feature load the original CSV in the
-browser. New form responses are saved in `data/SchoolSubmissions.xlsx`. The
+The performance charts load the original CSV in the browser. Compare Sleep
+defaults to that original dataset and also offers a school selector for
+submitted responses. New form responses are saved in `data/SchoolSubmissions.xlsx`. The
 school-level Findings chart gets de-identified submissions for selected
 schools from the Node.js server. If the school list cannot be loaded, Findings
 offers the original study data under the explicitly labeled "St. Lawrence
@@ -120,6 +121,9 @@ Important logic is handled in the JavaScript files:
 - `Codes/Js/performance.js` generates the GPA charts and summary metrics.
 - `Codes/Js/findings.js` checks selected schools' submission data, enforces
   the minimum valid-response count, and generates a school comparison chart.
+- `Codes/Js/comparison.js` lets the user keep the original St. Lawrence
+  University data or select a submitted school; it uses the same approved
+  response threshold as Findings.
 - `server.js` returns only de-identified analysis fields for each selected school.
 - `data/SchoolSubmissions.xlsx` stores new submissions in one worksheet, with
   one response per row.
@@ -162,12 +166,14 @@ This conclusion is designed to promote balanced analysis rather than oversimplif
 
 ### School-level data sufficiency
 
-`Codes/Js/findings.js` contains the setting
+`Codes/Js/research-config.js` contains the shared setting
 `MINIMUM_VALID_RESPONSES_PER_SCHOOL`. It is currently `null` because the project
 team has not confirmed a threshold from its research methodology. While unset,
 the page reports valid paired-response counts but does not display a school-level
 chart. Once the project leader confirms the minimum, set this value to that
-positive whole-number threshold. At least three valid pairs with variation in
+positive whole-number threshold. Findings and Compare Sleep both use this
+setting; school-specific comparisons remain unavailable until the threshold is
+approved. At least three valid pairs with variation in
 both GPA and the selected sleep measure are also required for a meaningful
 correlation. If any selected school fails the checks, the chart is withheld and
 the page explains why. Missing, non-numeric, and out-of-range values are excluded.
@@ -185,7 +191,7 @@ From the project root, run `npm start` and open `http://127.0.0.1:3000`.
 Submit a response on the Submit Data page, then select one or more schools under
 Findings. The school chart stays hidden until the research team sets the
 approved `MINIMUM_VALID_RESPONSES_PER_SCHOOL` value in
-`Codes/Js/findings.js`. Run `npm test` to verify submission validation,
+`Codes/Js/research-config.js`. Run `npm test` to verify submission validation,
 school-name normalization, Excel append behavior, duplicate retry handling,
 and privacy of the submission workbook. If school loading is unavailable, the
 Findings selector falls back to the original St. Lawrence University dataset.
