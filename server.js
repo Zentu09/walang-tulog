@@ -5,6 +5,11 @@ const ExcelJS = require("exceljs");
 
 const PROJECT_FOLDER = __dirname;
 const WEBSITE_FOLDER = path.join(PROJECT_FOLDER, "Codes");
+const SCHOOL_MASTERLIST_FILE = path.join(
+    WEBSITE_FOLDER,
+    "Js",
+    "School-Name-Masterlist.pdf"
+);
 const DATA_FILE = process.env.SLEEP_STUDY_EXCEL_FILE ||
     path.join(PROJECT_FOLDER, "data", "SchoolSubmissions.xlsx");
 const LEGACY_CSV_FILE = process.env.SLEEP_STUDY_CSV_FILE ||
@@ -27,6 +32,8 @@ const CSV_HEADERS = [
 ];
 // Save one response at a time so simultaneous submissions do not overwrite each other.
 let saveQueue = Promise.resolve();
+let approvedSchools = new Map();
+const ORIGINAL_STUDY_SCHOOL = "St. Lawrence University";
 
 function parseCsv(csvText) {
     const rows = [];
@@ -95,6 +102,49 @@ function getSchoolKey(school) {
     return normalizeSchoolName(school).toLocaleLowerCase("en-US");
 }
 
+async function loadApprovedSchools() {
+    const { getDocument } = await import("pdfjs-dist/legacy/build/pdf.mjs");
+    const document = await getDocument({
+        data: new Uint8Array(await fs.readFile(SCHOOL_MASTERLIST_FILE)),
+        useSystemFonts: true,
+        disableFontFace: true,
+        verbosity: 0
+    }).promise;
+    const schools = new Map();
+
+    try {
+        for (let pageNumber = 1; pageNumber <= document.numPages; pageNumber += 1) {
+            const page = await document.getPage(pageNumber);
+            const content = await page.getTextContent();
+
+            for (const item of content.items) {
+                const schoolColumnX = item.transform[4];
+                if (schoolColumnX < 185 || schoolColumnX >= 309) continue;
+
+                const match = item.str.trim().match(/^\d{6}\s+(.+)$/u);
+                if (!match) continue;
+
+                const school = match[1].normalize("NFC").trim().replace(/\s+/gu, " ");
+                if (school.length < 2 || school.length > 120) continue;
+
+                const key = getSchoolKey(school);
+                if (!schools.has(key)) schools.set(key, school);
+            }
+        }
+    } finally {
+        await document.destroy();
+    }
+
+    if (schools.size < 1000) {
+        throw new Error(
+            "The school masterlist could not be read. Verify that the PDF contains the expected school list."
+        );
+    }
+
+    schools.set(getSchoolKey(ORIGINAL_STUDY_SCHOOL), ORIGINAL_STUDY_SCHOOL);
+    approvedSchools = schools;
+}
+
 function validateSubmission(data) {
     if (!data || typeof data !== "object" || Array.isArray(data)) {
         throw new Error("The response is missing or invalid.");
@@ -103,12 +153,23 @@ function validateSubmission(data) {
     if (data.Consent !== true) {
         throw new Error("Consent is required before the response can be saved.");
     }
+    if (data.SchoolConfirmed !== true) {
+        throw new Error(
+            "Confirm that this is your school's complete official name before submitting."
+        );
+    }
     if (typeof data.SubmissionId !== "string" ||
         !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(data.SubmissionId)) {
         throw new Error("The response ID is invalid. Refresh the page and try again.");
     }
 
-    const school = normalizeSchoolName(data.School);
+    const requestedSchool = normalizeSchoolName(data.School);
+    const school = approvedSchools.get(getSchoolKey(requestedSchool));
+    if (!school) {
+        throw new Error(
+            "Choose your school's exact name from the approved masterlist. If it is missing, contact the study team before submitting."
+        );
+    }
     const numericFields = [
         ["GPA", 0, 4],
         ["WeekdayBed", 12, 35.99],
@@ -401,6 +462,46 @@ async function showWebsiteFile(request, response, urlPath) {
 async function handleRequest(request, response) {
     const url = new URL(request.url, "http://localhost");
 
+    if (url.pathname === "/api/approved-schools" && request.method === "GET") {
+        const query = url.searchParams.get("search") || "";
+        if (/[\u0000-\u001f\u007f]/u.test(query) || query.length > 120) {
+            sendJson(response, 400, { error: "Enter a valid school name." });
+            return;
+        }
+
+        const normalizedQuery = query.normalize("NFC").trim().replace(/\s+/gu, " ");
+        const queryKey = normalizedQuery.toLocaleLowerCase("en-US");
+        const matches = [];
+        if (!normalizedQuery) {
+            matches.push(ORIGINAL_STUDY_SCHOOL);
+        } else {
+            const exactSchool = approvedSchools.get(queryKey);
+            if (exactSchool) matches.push(exactSchool);
+
+            for (const [key, school] of approvedSchools) {
+                if (key.startsWith(queryKey) && !matches.includes(school)) {
+                    matches.push(school);
+                }
+                if (matches.length === 50) break;
+            }
+            if (matches.length < 50) {
+                for (const [key, school] of approvedSchools) {
+                    if (key.includes(queryKey) && !key.startsWith(queryKey) &&
+                        !matches.includes(school)) {
+                        matches.push(school);
+                    }
+                    if (matches.length === 50) break;
+                }
+            }
+        }
+
+        sendJson(response, 200, {
+            schools: matches,
+            exactMatch: approvedSchools.has(queryKey)
+        });
+        return;
+    }
+
     if (url.pathname === "/api/schools" && request.method === "GET") {
         const rows = await readSubmissions();
         const schools = [];
@@ -491,6 +592,7 @@ async function handleRequest(request, response) {
 }
 
 async function startServer(port = PORT) {
+    await loadApprovedSchools();
     await initializeExcelFile();
 
     const server = http.createServer((request, response) => {

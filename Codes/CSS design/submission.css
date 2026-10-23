@@ -85,6 +85,26 @@
     display: none;
 }
 
+.school-name-validation {
+    grid-column: 1 / -1;
+    min-height: 1.4em;
+    margin: -4px 0 0;
+    color: #a32727;
+    font-size: 0.86rem;
+}
+
+.school-name-validation:empty {
+    display: none;
+}
+
+.school-name-validation[data-state="success"] {
+    color: #17633b;
+}
+
+.school-name-validation[data-state="error"] {
+    color: #a32727;
+}
+
 .submission-note {
     margin: 22px 0 12px;
     color: #5f7da6;

@@ -1,6 +1,20 @@
+let latestSchoolSearchSequence = 0;
+
 document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("schoolSubmissionForm");
     if (!form) return;
+
+    const schoolInput = document.getElementById("schoolName");
+    const schoolValidation = document.getElementById("schoolNameValidation");
+    let searchTimer;
+    schoolInput.addEventListener("input", () => {
+        window.clearTimeout(searchTimer);
+        const sequence = ++latestSchoolSearchSequence;
+        schoolInput.setCustomValidity("Checking the approved school list.");
+        searchTimer = window.setTimeout(() => {
+            loadSchoolSuggestions(schoolInput, schoolValidation, sequence);
+        }, 200);
+    });
 
     const submissionIdKey = "sleepStudySubmissionId";
     form.dataset.submissionId =
@@ -8,27 +22,68 @@ document.addEventListener("DOMContentLoaded", () => {
     sessionStorage.setItem(submissionIdKey, form.dataset.submissionId);
 
     form.addEventListener("submit", submitSchoolResponse);
-    loadSchoolSuggestions();
+    loadSchoolSuggestions(
+        schoolInput,
+        schoolValidation,
+        ++latestSchoolSearchSequence
+    );
 });
 
-async function loadSchoolSuggestions() {
+async function loadSchoolSuggestions(input, message, sequence) {
     const schoolList = document.getElementById("schoolSuggestions");
 
     try {
-        const response = await fetch("/api/schools");
+        const query = input.value.trim().replace(/\s+/gu, " ");
+        const response = await fetch(
+            `/api/approved-schools?search=${encodeURIComponent(query)}`
+        );
         if (!response.ok) {
-            throw new Error(`Unable to load school names (${response.status}).`);
+            throw new Error(
+                `The school-verification API returned ${response.status}. Open the site at http://127.0.0.1:3000 and restart the Node server if needed.`
+            );
         }
 
-        const schools = await response.json();
+        const result = await response.json();
+        if (sequence !== latestSchoolSearchSequence) return;
         schoolList.replaceChildren();
-        for (const school of schools) {
+        for (const school of result.schools) {
             const option = document.createElement("option");
             option.value = school;
             schoolList.append(option);
         }
+
+        if (!query) {
+            input.setCustomValidity("");
+            message.textContent = "Type your school's name to search the approved list.";
+            message.dataset.state = "";
+        } else if (result.exactMatch) {
+            input.setCustomValidity("");
+            message.textContent = "This school is on the approved list.";
+            message.dataset.state = "success";
+        } else if (result.schools.length > 0) {
+            input.setCustomValidity(
+                "Choose the complete approved school name from the suggestions."
+            );
+            message.textContent = "Choose the complete school name from the suggestions.";
+            message.dataset.state = "";
+        } else {
+            input.setCustomValidity(
+                "This school is not on the approved list. Check the spelling or contact the study team."
+            );
+            message.textContent =
+                "No approved school matches. Check the spelling or contact the study team.";
+            message.dataset.state = "error";
+        }
     } catch (error) {
         console.error("School suggestions could not be loaded.", error);
+        if (sequence !== latestSchoolSearchSequence) return;
+        input.setCustomValidity(
+            "School verification is unavailable. Start the Node server and open http://127.0.0.1:3000."
+        );
+        message.textContent = error instanceof TypeError
+            ? "School verification is unavailable. Start the Node server with npm start, then open http://127.0.0.1:3000 (not VS Code Live Server)."
+            : error.message;
+        message.dataset.state = "error";
     }
 }
 
@@ -64,7 +119,8 @@ function createSchoolSubmission(form) {
         WeekendSleep: calculateSleepDuration(weekendBedtime, weekendRiseTime),
         PoorSleepQuality: Number(values.get("PoorSleepQuality")),
         LarkOwl: values.get("LarkOwl"),
-        Consent: values.get("consent") === "on"
+        Consent: values.get("consent") === "on",
+        SchoolConfirmed: values.get("schoolConfirmed") === "on"
     };
 }
 
@@ -92,6 +148,7 @@ async function submitSchoolResponse(event) {
         }
 
         form.reset();
+        document.getElementById("schoolName").setCustomValidity("");
         form.dataset.submissionId = crypto.randomUUID();
         sessionStorage.setItem("sleepStudySubmissionId", form.dataset.submissionId);
         message.dataset.state = "success";
@@ -100,7 +157,11 @@ async function submitSchoolResponse(event) {
         } else {
             message.textContent = `Your response was saved for ${result.school}.`;
         }
-        await loadSchoolSuggestions();
+        await loadSchoolSuggestions(
+            document.getElementById("schoolName"),
+            document.getElementById("schoolNameValidation"),
+            ++latestSchoolSearchSequence
+        );
         window.dispatchEvent(new Event("school-submission-saved"));
     } catch (error) {
         console.error("Student response could not be saved.", error);

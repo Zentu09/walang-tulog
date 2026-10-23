@@ -69,11 +69,14 @@
                 <form id="schoolSubmissionForm" class="submission-form">
                     <div class="submission-fields">
                         <label for="schoolName">Full school name
-                            <span>Enter the complete official school name, not an acronym. Include your campus if applicable.</span>
+                            <span>Type your complete official school name and choose the matching entry from the approved list. The original study school, St. Lawrence University, is also available.</span>
                             <input id="schoolName" name="school" type="text" maxlength="120"
-                                list="schoolSuggestions" autocomplete="organization" required>
+                                list="schoolSuggestions" autocomplete="organization"
+                                aria-describedby="schoolNameValidation" required>
                         </label>
                         <datalist id="schoolSuggestions"></datalist>
+                        <p id="schoolNameValidation" class="school-name-validation"
+                           role="status" aria-live="polite"></p>
 
                         <label for="studentGpa">Current Philippine GPA
                             <span>(1.00–5.00; 1.00 is highest)</span>
@@ -116,6 +119,12 @@
                         Sleep durations are calculated from the times you enter. Bedtimes
                         before noon are saved in the same format as the study dataset.
                     </p>
+
+                    <label class="submission-consent">
+                        <input name="schoolConfirmed" type="checkbox" required>
+                        I confirm that I attend this school and selected its complete
+                        official name from the approved list.
+                    </label>
 
                     <label class="submission-consent">
                         <input name="consent" type="checkbox" required>

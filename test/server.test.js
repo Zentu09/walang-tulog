@@ -37,7 +37,7 @@ after(async () => {
 function makeSubmission(overrides = {}) {
     return {
         SubmissionId: "11111111-1111-4111-8111-111111111111",
-        School: "ABC College",
+        School: "Bacarra CES",
         GPA: 3.25,
         WeekdayBed: 25,
         WeekdayRise: 9,
@@ -46,13 +46,14 @@ function makeSubmission(overrides = {}) {
         PoorSleepQuality: 7,
         LarkOwl: "Neither",
         Consent: true,
+        SchoolConfirmed: true,
         ...overrides
     };
 }
 
 test("school names share a normalized key", () => {
-    assert.equal(getSchoolKey("  ABC   College "), "abc college");
-    assert.equal(getSchoolKey("abc college"), "abc college");
+    assert.equal(getSchoolKey("  Bacarra   CES "), "bacarra ces");
+    assert.equal(getSchoolKey("bacarra ces"), "bacarra ces");
 });
 
 test("the server validates required fields and consent", () => {
@@ -61,8 +62,24 @@ test("the server validates required fields and consent", () => {
         /Consent is required/u
     );
     assert.throws(
+        () => validateSubmission(makeSubmission({ SchoolConfirmed: false })),
+        /complete official name/u
+    );
+    assert.throws(
         () => validateSubmission(makeSubmission({ School: " " })),
         /School name must be between 2 and 120 characters/u
+    );
+    assert.throws(
+        () => validateSubmission(makeSubmission({ School: "blue banana orange" })),
+        /approved masterlist/u
+    );
+    assert.equal(
+        validateSubmission(makeSubmission({ School: "  bACARRA   cES " })).School,
+        "Bacarra CES"
+    );
+    assert.equal(
+        validateSubmission(makeSubmission({ School: "St. Lawrence University" })).School,
+        "St. Lawrence University"
     );
     assert.throws(
         () => validateSubmission(makeSubmission({ GPA: 5 })),
@@ -72,6 +89,36 @@ test("the server validates required fields and consent", () => {
         () => validateSubmission(makeSubmission({ PoorSleepQuality: -1 })),
         /non-negative whole-number score/u
     );
+});
+
+test("the approved-school search verifies PDF names and the original study school", async () => {
+    const pdfSchoolResponse = await fetch(
+        `${baseUrl}/api/approved-schools?search=${encodeURIComponent("bacarra   ces")}`
+    );
+    const pdfSchools = await pdfSchoolResponse.json();
+    assert.equal(pdfSchoolResponse.status, 200);
+    assert.equal(pdfSchools.exactMatch, true);
+    assert.ok(pdfSchools.schools.includes("Bacarra CES"));
+
+    const originalSchoolResponse = await fetch(
+        `${baseUrl}/api/approved-schools?search=${encodeURIComponent("st. lawrence university")}`
+    );
+    const originalSchool = await originalSchoolResponse.json();
+    assert.equal(originalSchool.exactMatch, true);
+    assert.ok(originalSchool.schools.includes("St. Lawrence University"));
+});
+
+test("the submission endpoint rejects schools outside the approved list", async () => {
+    const response = await fetch(`${baseUrl}/api/submissions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(makeSubmission({
+            SubmissionId: "33333333-3333-4333-8333-333333333333",
+            School: "blue banana orange"
+        }))
+    });
+    assert.equal(response.status, 400);
+    assert.match((await response.json()).error, /approved masterlist/u);
 });
 
 test("responses append, reuse school spelling, and ignore retry duplicates", async () => {
@@ -95,22 +142,22 @@ test("responses append, reuse school spelling, and ignore retry duplicates", asy
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(makeSubmission({
             SubmissionId: "22222222-2222-4222-8222-222222222222",
-            School: "abc college"
+            School: "bacarra ces"
         }))
     });
     assert.equal(secondResponse.status, 201);
-    assert.equal((await secondResponse.json()).school, "ABC College");
+    assert.equal((await secondResponse.json()).school, "Bacarra CES");
 
     const schoolsResponse = await fetch(`${baseUrl}/api/schools`);
-    assert.deepEqual(await schoolsResponse.json(), ["Old School", "ABC College"]);
+    assert.deepEqual(await schoolsResponse.json(), ["Old School", "Bacarra CES"]);
 
     const schoolDataResponse = await fetch(
-        `${baseUrl}/api/school-submissions?school=abc%20college`
+        `${baseUrl}/api/school-submissions?school=bacarra%20ces`
     );
     const schoolData = await schoolDataResponse.json();
     assert.equal(schoolDataResponse.status, 200);
     assert.equal(schoolData.length, 2);
-    assert.equal(schoolData[0].School, "ABC College");
+    assert.equal(schoolData[0].School, "Bacarra CES");
     assert.equal(schoolData[0].GPA, 3.25);
     assert.equal("SubmissionId" in schoolData[0], false);
 
@@ -129,7 +176,7 @@ test("responses append, reuse school spelling, and ignore retry duplicates", asy
     const worksheet = workbook.getWorksheet("Submissions");
     assert.equal(worksheet.rowCount, 4);
     assert.equal(worksheet.getCell(2, 2).value, "Old School");
-    assert.equal(worksheet.getCell(3, 2).value, "ABC College");
+    assert.equal(worksheet.getCell(3, 2).value, "Bacarra CES");
     assert.equal(worksheet.getCell(3, 3).value, 3.25);
     assert.equal(fs.readFileSync(csvFile, "utf8"), oldCsvContent);
 });
@@ -146,7 +193,9 @@ test("the website is served but the private submissions file is not", async () =
     assert.equal(pageResponse.status, 200);
     const page = await pageResponse.text();
     assert.match(page, /schoolSubmissionForm/u);
-    assert.match(page, /complete official school name/u);
+    assert.match(page, /approved list/u);
+    assert.match(page, /schoolNameValidation/u);
+    assert.match(page, /schoolConfirmed/u);
     assert.match(page, /naturally alert earlier in the day/u);
     assert.match(page, /naturally more alert later in the day/u);
 

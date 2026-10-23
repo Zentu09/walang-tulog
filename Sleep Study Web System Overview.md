@@ -88,6 +88,7 @@ The website uses:
 - Font Awesome icons for UI elements
 - Node.js built-in modules for the submission server
 - ExcelJS for creating the submission workbook
+- PDF.js for reading the approved school names from the supplied masterlist
 
 The performance charts load the original CSV in the browser. Compare Sleep
 defaults to that original dataset and also offers a school selector for
@@ -110,10 +111,13 @@ The system follows a simple workflow:
 5. A school-level chart and correlation are shown only when enough valid
    responses meet the configured minimum.
 
-The submission workflow is separate: the form sends its response to the local
-Node.js server, which checks required fields, normalizes the school name, avoids
-retry duplicates, and adds the response as a new row in the Excel workbook. If
-the workbook does not exist yet, existing submission rows from
+The submission workflow is separate: the form searches the supplied PDF school
+masterlist through the server, which parses and caches its school names at
+startup. The server accepts only names from that list, plus the original study
+school, St. Lawrence University. It normalizes capitalization and spacing,
+stores the canonical list spelling, checks required fields, avoids retry
+duplicates, and adds each response as a new row in the Excel workbook. If the
+workbook does not exist yet, existing submission rows from
 `data/SchoolSubmissions.csv` are copied into it. The CSV file is kept unchanged.
 
 Important logic is handled in the JavaScript files:
@@ -179,11 +183,19 @@ correlation. If any selected school fails the checks, the chart is withheld and
 the page explains why. Missing, non-numeric, and out-of-range values are excluded.
 
 The submission form asks students to enter the complete official school name
-(including campus where relevant) and explains the chronotype options: Lark
+(including campus where relevant) and select it from the supplied approved
+masterlist. The original study school, St. Lawrence University, is included
+even though it is not in that Philippines-focused PDF. Search suggestions are
+loaded as students type; names are matched without regard to capitalization or
+extra whitespace. The server rechecks every submission against its parsed list,
+so client-side suggestions are not treated as authoritative. Replace the PDF
+with an approved current list if the research team's school policy changes.
+The form also explains the chronotype options: Lark
 means a preference for earlier activity, Owl means a preference for later
 activity, and Neither means no strong preference for either. The server
-normalizes capitalization and whitespace while retaining the first saved
-spelling for display.
+requires students to confirm that they attend the selected school. The approved
+list verifies that a school name appears in the supplied masterlist; it does
+not verify an individual student's enrollment.
 
 ### Run and verify
 
@@ -192,8 +204,10 @@ Submit a response on the Submit Data page, then select one or more schools under
 Findings. The school chart stays hidden until the research team sets the
 approved `MINIMUM_VALID_RESPONSES_PER_SCHOOL` value in
 `Codes/Js/research-config.js`. Run `npm test` to verify submission validation,
-school-name normalization, Excel append behavior, duplicate retry handling,
-and privacy of the submission workbook. If school loading is unavailable, the
+PDF school-list lookup, school-name normalization, Excel append behavior,
+duplicate retry handling, and privacy of the submission workbook. Keep
+`Codes/Js/School-Name-Masterlist.pdf` in place for the server to start and
+verify student submissions. If school loading is unavailable, the
 Findings selector falls back to the original St. Lawrence University dataset.
 
 ## 8. Report summary
