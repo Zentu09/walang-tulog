@@ -588,6 +588,16 @@ async function handleRequest(request, response) {
         response.end("Method not allowed");
         return;
     }
+
+    if (url.pathname === "/") {
+        response.writeHead(302, {
+            "Location": "/Codes/Template/index.html",
+            "Cache-Control": "no-store"
+        });
+        response.end();
+        return;
+    }
+
     await showWebsiteFile(request, response, url.pathname);
 }
 

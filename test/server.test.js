@@ -189,6 +189,13 @@ test("saved sleep durations use the values derived by the server", () => {
 });
 
 test("the website is served but the private submissions file is not", async () => {
+    const rootResponse = await fetch(baseUrl, { redirect: "manual" });
+    assert.equal(rootResponse.status, 302);
+    assert.equal(
+        rootResponse.headers.get("location"),
+        "/Codes/Template/index.html"
+    );
+
     const pageResponse = await fetch(`${baseUrl}/Codes/Template/submission.html`);
     assert.equal(pageResponse.status, 200);
     const page = await pageResponse.text();
