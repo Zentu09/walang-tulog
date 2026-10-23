@@ -2,6 +2,7 @@ const http = require("node:http");
 const fs = require("node:fs/promises");
 const path = require("node:path");
 const ExcelJS = require("exceljs");
+const supabase = require("./supabase/client");
 
 const PROJECT_FOLDER = __dirname;
 const WEBSITE_FOLDER = path.join(PROJECT_FOLDER, "Codes");
@@ -218,6 +219,7 @@ function calculateSleepDuration(bedtime, riseTime) {
 }
 
 async function readSubmissions() {
+    if (supabase.isConfigured()) return supabase.readSubmissions();
     const workbook = new ExcelJS.Workbook();
     await workbook.xlsx.readFile(DATA_FILE);
     const worksheet = workbook.getWorksheet("Submissions");
@@ -318,6 +320,10 @@ async function createExcelFile() {
 }
 
 async function initializeExcelFile() {
+    if (supabase.isConfigured()) return;
+    if (process.env.VERCEL) {
+        throw new Error("Supabase is not configured. Add SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in Vercel > Settings > Environment Variables.");
+    }
     await fs.mkdir(path.dirname(DATA_FILE), { recursive: true });
 
     try {
@@ -356,6 +362,11 @@ async function saveSubmission(submission) {
         }
         if (sameSchool) submission.School = sameSchool.School;
 
+        if (supabase.isConfigured()) {
+            const inserted = await supabase.insertSubmission(submission);
+            return { school: submission.School, alreadySubmitted: !inserted };
+        }
+
         const workbook = new ExcelJS.Workbook();
         await workbook.xlsx.readFile(DATA_FILE);
         const worksheet = workbook.getWorksheet("Submissions");
@@ -389,6 +400,16 @@ function sendJson(response, status, data) {
 }
 
 async function readRequestBody(request) {
+    // On Vercel the platform may already have parsed the body.
+    if (request.body !== undefined && request.body !== null) {
+        if (typeof request.body === "object") return request.body;
+        try {
+            return JSON.parse(request.body);
+        } catch {
+            throw new Error("The response could not be read. Please try again.");
+        }
+    }
+
     let text = "";
 
     for await (const chunk of request) {
@@ -601,9 +622,26 @@ async function handleRequest(request, response) {
     await showWebsiteFile(request, response, url.pathname);
 }
 
+let preparePromise = null;
+// Loads the school list once per server/function instance.
+function prepare() {
+    if (!preparePromise) {
+        preparePromise = (async () => {
+            await loadApprovedSchools();
+            await initializeExcelFile();
+        })().catch(error => {
+            preparePromise = null;
+            throw error;
+        });
+    }
+    return preparePromise;
+}
+
 async function startServer(port = PORT) {
-    await loadApprovedSchools();
-    await initializeExcelFile();
+    await prepare();
+    console.log(supabase.isConfigured()
+        ? "Storage: Supabase"
+        : "Storage: local Excel file (set SUPABASE_URL to use Supabase)");
 
     const server = http.createServer((request, response) => {
         handleRequest(request, response).catch(error => {
@@ -641,6 +679,8 @@ if (require.main === module) {
 
 module.exports = {
     getSchoolKey,
+    handleRequest,
+    prepare,
     startServer,
     validateSubmission
 };

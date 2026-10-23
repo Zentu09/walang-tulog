@@ -1,0 +1,13 @@
+{
+  "buildCommand": "node scripts/build-static.js",
+  "outputDirectory": "public",
+  "redirects": [
+    { "source": "/", "destination": "/Codes/Template/index.html", "permanent": false }
+  ],
+  "functions": {
+    "api/**/*.js": {
+      "includeFiles": "Codes/Js/School-Name-Masterlist.pdf",
+      "maxDuration": 30
+    }
+  }
+}

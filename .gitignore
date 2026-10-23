@@ -1,3 +1,6 @@
 /data/SchoolSubmissions.csv
 /data/SchoolSubmissions.xlsx
 /node_modules/
+
+.env
+/public/
