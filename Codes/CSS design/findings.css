@@ -22,7 +22,6 @@
     --fd-point: rgb(79 145 232 / 55%);
     --fd-point-edge: #8fc4ff;
     --fd-trend: #2563c9;
-    --fd-you: #d9780f;
     --fd-bar-1: #8fc4ff;
     --fd-bar-2: #4f91e8;
     --fd-bar-3: #1f5fbf;
@@ -49,7 +48,6 @@ html[data-theme="dark"] #findings.fd,
     --fd-point: rgb(111 168 250 / 50%);
     --fd-point-edge: #9cc7ff;
     --fd-trend: #b9dbff;
-    --fd-you: #ffb454;
     --fd-bar-1: #b9dbff;
     --fd-bar-2: #6fa8fa;
     --fd-bar-3: #3f7fe0;
@@ -424,172 +422,8 @@ html[data-theme="dark"] #findings.fd,
     font-size: 0.82rem;
 }
 
-/* ---------- Where do you fit? ---------- */
-
-.fd-you {
-    display: inline-block;
-    width: 24px;
-    margin-right: 6px;
-    border-top: 3px dashed var(--fd-you);
-    vertical-align: middle;
-}
-
 html[data-theme="dark"] .fd input {
     color-scheme: dark;
-}
-
-.fd-me {
-    padding: 24px 26px;
-}
-
-.fd-me-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
-    gap: 28px;
-}
-
-.fd-me-form {
-    display: grid;
-    gap: 16px;
-}
-
-.fd-me-form fieldset {
-    min-width: 0;
-    margin: 0;
-    padding: 0;
-    border: 0;
-}
-
-.fd-me-form legend {
-    margin-bottom: 8px;
-    padding: 0;
-    color: var(--fd-ink);
-    font-weight: 700;
-}
-
-.fd-me-fields {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-}
-
-.fd-me-form label {
-    display: grid;
-    gap: 6px;
-    color: var(--fd-muted);
-    font-size: 0.88rem;
-    font-weight: 600;
-}
-
-.fd-me-form input {
-    min-height: 42px;
-    box-sizing: border-box;
-    width: 100%;
-    padding: 8px 10px;
-    border: 1px solid var(--fd-line);
-    border-radius: 10px;
-    background: var(--fd-surface-alt);
-    color: var(--fd-ink);
-    font: inherit;
-}
-
-.fd-me-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-.fd-btn {
-    min-height: 44px;
-    padding: 10px 20px;
-    border: 1px solid var(--fd-accent);
-    border-radius: 12px;
-    background: var(--fd-accent);
-    color: var(--fd-on-accent);
-    font: inherit;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-.fd-btn-ghost {
-    background: transparent;
-    color: var(--fd-ink);
-    border-color: var(--fd-line);
-}
-
-.fd-btn-ghost:hover {
-    border-color: var(--fd-accent);
-}
-
-#findings.fd .fd-btn {
-    color: var(--fd-on-accent);
-}
-
-#findings.fd .fd-btn-ghost {
-    color: var(--fd-ink);
-}
-
-.fd-me-message {
-    margin: 0 0 12px;
-    color: var(--fd-muted);
-    font-size: 0.9rem;
-    line-height: 1.5;
-}
-
-.fd-me-results {
-    display: grid;
-    gap: 6px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.fd-me-row {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 2px 12px;
-    width: 100%;
-    box-sizing: border-box;
-    padding: 10px 14px;
-    border: 1px solid var(--fd-line);
-    border-left: 4px solid var(--fd-you);
-    border-radius: 12px;
-    background: transparent;
-    color: var(--fd-ink);
-    font: inherit;
-    text-align: left;
-}
-
-button.fd-me-row {
-    cursor: pointer;
-}
-
-button.fd-me-row:hover {
-    background: var(--fd-surface-alt);
-}
-
-button.fd-me-row[aria-pressed="true"] {
-    background: var(--fd-accent-soft);
-}
-
-#findings.fd .fd-me-row {
-    color: var(--fd-ink);
-}
-
-.fd-me-name {
-    font-weight: 600;
-}
-
-.fd-me-value {
-    font-variant-numeric: tabular-nums;
-    font-weight: 700;
-    text-align: right;
-}
-
-.fd-me-detail {
-    grid-column: 1 / -1;
-    color: var(--fd-muted);
-    font-size: 0.88rem;
 }
 
 /* ---------- Ranking ---------- */
@@ -760,14 +594,8 @@ button.fd-me-row[aria-pressed="true"] {
 
     .fd-result,
     .fd-rank,
-    .fd-me,
     .fd-note-card {
         padding: 18px;
-    }
-
-    .fd-me-layout {
-        grid-template-columns: 1fr;
-        gap: 20px;
     }
 
     .fd-r {
@@ -776,10 +604,6 @@ button.fd-me-row[aria-pressed="true"] {
 }
 
 @media (max-width: 520px) {
-    .fd-me-fields {
-        grid-template-columns: 1fr;
-    }
-
     .fd-rank-row {
         grid-template-columns: 1fr auto;
         gap: 8px 12px;

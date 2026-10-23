@@ -36,7 +36,6 @@
                         <li><a href="#about-study">About Study</a></li>
                         <li><a href="#sleep-habits">Sleep Habits</a></li>
                         <li><a href="#performance">Performance</a></li>
-                        <li><a href="#submit-response">Submit Data</a></li>
                         <li><a href="#findings">Findings</a></li>
                         <li><a href="comparison.html">Compare Sleep</a></li>
                         
@@ -267,7 +266,6 @@
                             <div class="fd-legend" id="fdLegend">
                                 <span><i class="fd-dot"></i>Students</span>
                                 <span><i class="fd-line"></i>Trend line</span>
-                                <span id="fdLegendYou" hidden><i class="fd-you"></i>You</span>
                             </div>
 
                             <div class="fd-zoom" id="fdZoom">
@@ -312,66 +310,6 @@
                         <p class="fd-fineprint">A correlation shows a pattern, not a cause.</p>
                     </aside>
                 </div>
-
-                <section class="fd-card fd-me" aria-labelledby="fdMeTitle">
-                    <h3 id="fdMeTitle">Where do you fit?</h3>
-                    <p class="fd-sub">
-                        Enter your own sleep times to compare yourself with the students in the
-                        study. Your answers stay in your browser and aren't saved or sent anywhere.
-                    </p>
-
-                    <div class="fd-me-layout">
-                        <form class="fd-me-form" id="fdMeForm" novalidate>
-                            <fieldset>
-                                <legend>On weekdays</legend>
-                                <div class="fd-me-fields">
-                                    <label>Bedtime
-                                        <input type="time" id="meWeekdayBed">
-                                    </label>
-                                    <label>Wake-up time
-                                        <input type="time" id="meWeekdayRise">
-                                    </label>
-                                </div>
-                            </fieldset>
-
-                            <fieldset>
-                                <legend>On weekends</legend>
-                                <div class="fd-me-fields">
-                                    <label>Bedtime
-                                        <input type="time" id="meWeekendBed">
-                                    </label>
-                                    <label>Wake-up time
-                                        <input type="time" id="meWeekendRise">
-                                    </label>
-                                </div>
-                            </fieldset>
-
-                            <fieldset>
-                                <legend>Optional</legend>
-                                <div class="fd-me-fields">
-                                    <label>Poor sleep quality score (higher means worse)
-                                        <input type="number" id="mePoorSleepQuality" min="0" step="0.1" inputmode="decimal">
-                                    </label>
-                                    <label>Your GPA (0 to 4)
-                                        <input type="number" id="meGpa" min="0" max="4" step="0.01" inputmode="decimal">
-                                    </label>
-                                </div>
-                            </fieldset>
-
-                            <div class="fd-me-actions">
-                                <button type="submit" class="fd-btn">Show where I fit</button>
-                                <button type="button" class="fd-btn fd-btn-ghost" id="fdMeClear">Clear</button>
-                            </div>
-                        </form>
-
-                        <div>
-                            <p class="fd-me-message" id="fdMeMessage" role="status">
-                                Fill in any of the fields to see how you compare.
-                            </p>
-                            <ul class="fd-me-results" id="fdMeResults"></ul>
-                        </div>
-                    </div>
-                </section>
 
                 <section class="fd-card fd-rank" aria-labelledby="fdRankTitle">
                     <h3 id="fdRankTitle">All habits compared</h3>
@@ -419,7 +357,6 @@
         <script src="../Js/findings.js"></script>
         <script src="../Js/navigation.js"></script>
         <script src="../Js/app.js"></script>
-        <script src="../Js/schoolSubmission.js"></script>
         <script src="../Js/mobile-navigation.js"></script>
         <script src="../Js/theme-toggle.js"></script>
     </body>
