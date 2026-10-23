@@ -72,10 +72,11 @@ This is the main analytical section. It uses a dropdown to select variables such
 - Social Jetlag
 - Chronotype (Lark/Owl/Neither)
 
-The school-level chart uses the selected school's valid submissions and selected
-sleep measure. It displays a correlation only after the project team sets an
-approved minimum response count and the data passes the validity checks. The
-original study summary remains based on the existing dataset.
+The school-level chart compares one or more selected schools using valid
+submissions and a selected sleep measure. It displays a scatter plot and
+correlation only after the project team sets an approved minimum response count
+and every selected school passes the validity checks. The original study
+summary remains based on the existing dataset.
 
 ## 4. Technologies used
 
@@ -90,7 +91,11 @@ The website uses:
 
 The performance charts and Compare Sleep feature load the original CSV in the
 browser. New form responses are saved in `data/SchoolSubmissions.xlsx`. The
-Findings chart gets submissions for one selected school from the Node.js server.
+school-level Findings chart gets de-identified submissions for selected
+schools from the Node.js server. If the school list cannot be loaded, Findings
+offers the original study data under the explicitly labeled "St. Lawrence
+University (original study dataset)" selection; it never treats that fallback
+as newly submitted school records.
 The original `Codes/Js/SleepStudy.csv` and Compare Sleep workflow stay unchanged.
 
 ## 5. Data flow in the system
@@ -99,7 +104,7 @@ The system follows a simple workflow:
 
 1. The page loads.
 2. The existing performance charts fetch and parse the original CSV.
-3. New submissions for the selected school are loaded from the server.
+3. New submissions for selected schools are loaded from the server when chosen.
 4. The selected sleep measure and GPA are checked for valid numerical values.
 5. A school-level chart and correlation are shown only when enough valid
    responses meet the configured minimum.
@@ -113,9 +118,9 @@ the workbook does not exist yet, existing submission rows from
 Important logic is handled in the JavaScript files:
 - `Codes/Js/data.js` parses and cleans the CSV.
 - `Codes/Js/performance.js` generates the GPA charts and summary metrics.
-- `Codes/Js/findings.js` checks the selected school's submission data, enforces
-  the minimum valid-response count, and generates the chart and correlation.
-- `server.js` returns only the analysis fields for the selected school.
+- `Codes/Js/findings.js` checks selected schools' submission data, enforces
+  the minimum valid-response count, and generates a school comparison chart.
+- `server.js` returns only de-identified analysis fields for each selected school.
 - `data/SchoolSubmissions.xlsx` stores new submissions in one worksheet, with
   one response per row.
 - `Codes/Template/index.html` and `Codes/Template/study.html` provide the page structure and content.
@@ -160,12 +165,30 @@ This conclusion is designed to promote balanced analysis rather than oversimplif
 `Codes/Js/findings.js` contains the setting
 `MINIMUM_VALID_RESPONSES_PER_SCHOOL`. It is currently `null` because the project
 team has not confirmed a threshold from its research methodology. While unset,
-the page reports the valid response count but does not display a school-level
+the page reports valid paired-response counts but does not display a school-level
 chart. Once the project leader confirms the minimum, set this value to that
-positive whole-number threshold. For each selected sleep measure, only records
-with a valid GPA and a valid value for that measure are counted. Chronotype
-comparisons also require at least two valid groups. Missing, non-numeric,
-out-of-range, and non-varying data are not used to generate a misleading chart.
+positive whole-number threshold. At least three valid pairs with variation in
+both GPA and the selected sleep measure are also required for a meaningful
+correlation. If any selected school fails the checks, the chart is withheld and
+the page explains why. Missing, non-numeric, and out-of-range values are excluded.
+
+The submission form asks students to enter the complete official school name
+(including campus where relevant) and explains the chronotype options: Lark
+means a preference for earlier activity, Owl means a preference for later
+activity, and Neither means no strong preference for either. The server
+normalizes capitalization and whitespace while retaining the first saved
+spelling for display.
+
+### Run and verify
+
+From the project root, run `npm start` and open `http://127.0.0.1:3000`.
+Submit a response on the Submit Data page, then select one or more schools under
+Findings. The school chart stays hidden until the research team sets the
+approved `MINIMUM_VALID_RESPONSES_PER_SCHOOL` value in
+`Codes/Js/findings.js`. Run `npm test` to verify submission validation,
+school-name normalization, Excel append behavior, duplicate retry handling,
+and privacy of the submission workbook. If school loading is unavailable, the
+Findings selector falls back to the original St. Lawrence University dataset.
 
 ## 8. Report summary
 

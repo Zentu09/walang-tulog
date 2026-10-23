@@ -146,10 +146,37 @@ test("the website is served but the private submissions file is not", async () =
     assert.equal(pageResponse.status, 200);
     const page = await pageResponse.text();
     assert.match(page, /schoolSubmissionForm/u);
+    assert.match(page, /complete official school name/u);
+    assert.match(page, /naturally alert earlier in the day/u);
+    assert.match(page, /naturally more alert later in the day/u);
 
     const findingsPage = await fetch(`${baseUrl}/Codes/Template/study.html`);
     assert.equal(findingsPage.status, 200);
-    assert.match(await findingsPage.text(), /id="findings"/u);
+    const findings = await findingsPage.text();
+    assert.match(findings, /id="findings"/u);
+    assert.match(findings, /id="schoolFindingsSchools"/u);
+    assert.match(findings, /id="schoolSleepMeasure"/u);
+    assert.match(findings, /id="schoolScatterChart"/u);
+
+    const comparisonPage = await fetch(`${baseUrl}/Codes/Template/comparison.html`);
+    assert.equal(comparisonPage.status, 200);
+    assert.match(await comparisonPage.text(), /id="sleepComparisonForm"/u);
+
+    for (const pagePath of [
+        "/Codes/Template/index.html",
+        "/Codes/Template/study.html",
+        "/Codes/Template/submission.html",
+        "/Codes/Template/comparison.html"
+    ]) {
+        const response = await fetch(`${baseUrl}${pagePath}`);
+        const html = await response.text();
+        assert.equal(response.status, 200);
+        assert.match(html, /class="nav-dropdown-toggle"/u);
+        assert.match(html, /href="(?:study\.html)?#?about-study"/u);
+        assert.match(html, /href="(?:study\.html)?#?sleep-habits"/u);
+        assert.match(html, /href="(?:study\.html)?#?performance"/u);
+        assert.match(html, /href="(?:study\.html)?#?findings"/u);
+    }
 
     const dataResponse = await fetch(`${baseUrl}/data/responses.xlsx`);
     assert.equal(dataResponse.status, 404);

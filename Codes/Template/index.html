@@ -28,11 +28,19 @@
                 <nav id="primary-navigation" aria-label="Main navigation">
                     <ul>
                         <li><a href="index.html#home">Home</a></li>
-                        <li><a href="study.html#about-study">About Study</a></li>
-                        <li><a href="study.html#sleep-habits">Sleep Habits</a></li>
-                        <li><a href="study.html#performance">Performance</a></li>
+                        <li class="nav-dropdown">
+                            <button class="nav-dropdown-toggle" type="button"
+                                aria-expanded="false" aria-controls="study-nav-links">
+                                Study Sections
+                            </button>
+                            <ul class="nav-submenu" id="study-nav-links">
+                                <li><a href="study.html#about-study">About Study</a></li>
+                                <li><a href="study.html#sleep-habits">Sleep Habits</a></li>
+                                <li><a href="study.html#performance">Performance</a></li>
+                                <li><a href="study.html#findings">Findings</a></li>
+                            </ul>
+                        </li>
                         <li><a href="submission.html">Submit Data</a></li>
-                        <li><a href="study.html#findings">Findings</a></li>
                         <li><a href="comparison.html">Compare Sleep</a></li>
                         
                     </ul>

@@ -5,6 +5,33 @@
    Called from app.js: createScatterCharts(rows)
    ========================================================== */
 
+let originalStudyRowsForSchoolFindings = null;
+let originalStudyRowsLoadError = null;
+const originalStudyRowsWaiters = [];
+
+function setOriginalStudyRowsForSchoolFindings(rows) {
+    originalStudyRowsForSchoolFindings = rows;
+    originalStudyRowsLoadError = null;
+    originalStudyRowsWaiters.splice(0).forEach(waiter => waiter.resolve(rows));
+}
+
+function failOriginalStudyRowsForSchoolFindings(error) {
+    originalStudyRowsLoadError = error;
+    originalStudyRowsWaiters.splice(0).forEach(waiter => waiter.reject(error));
+}
+
+function waitForOriginalStudyRowsForSchoolFindings() {
+    if (Array.isArray(originalStudyRowsForSchoolFindings)) {
+        return Promise.resolve(originalStudyRowsForSchoolFindings);
+    }
+    if (originalStudyRowsLoadError) {
+        return Promise.reject(originalStudyRowsLoadError);
+    }
+    return new Promise((resolve, reject) => {
+        originalStudyRowsWaiters.push({ resolve, reject });
+    });
+}
+
 function getCorrelationStrength(correlation) {
     const absolute = Math.abs(correlation);
 
@@ -69,6 +96,8 @@ function createScatterCharts(rows) {
     const canvas = $("scatterChart");
 
     if (!root || !picker || !canvas) return;
+
+    setOriginalStudyRowsForSchoolFindings(rows);
 
     const HABITS = [
         { key: "WeekdayBed", group: "Timing", kind: "clock", step: 1,
@@ -613,3 +642,277 @@ function createScatterCharts(rows) {
     // Redraw with the right colors when the theme changes.
     window.addEventListener("sleep-study-theme-change", render);
 }
+
+function initializeSchoolFindings() {
+    const schoolsElement = document.getElementById("schoolFindingsSchools");
+    const measureElement = document.getElementById("schoolSleepMeasure");
+    const statusElement = document.getElementById("schoolFindingsStatus");
+    const canvas = document.getElementById("schoolScatterChart");
+    const chartContainer = document.getElementById("schoolChartContainer");
+
+    if (!schoolsElement || !measureElement || !statusElement ||
+        !canvas || !chartContainer) return;
+
+    // Set only after the research team approves a threshold in its methodology.
+    const MINIMUM_VALID_RESPONSES_PER_SCHOOL = null;
+    const ORIGINAL_DATASET_SCHOOL = "St. Lawrence University (original study dataset)";
+    const measures = {
+        WeekdaySleep: {
+            label: "Weekday sleep duration (hours)",
+            valid: value => value > 0 && value <= 24
+        },
+        WeekendSleep: {
+            label: "Weekend sleep duration (hours)",
+            valid: value => value > 0 && value <= 24
+        },
+        PoorSleepQuality: {
+            label: "Poor sleep quality score (higher means worse quality)",
+            valid: value => value >= 0
+        },
+        SocialJetlag: {
+            label: "Social jetlag (hours)",
+            valid: value => value >= -24 && value <= 24
+        }
+    };
+    const colors = ["#2563c9", "#a45bc4", "#df8b24", "#17866b", "#c84d58"];
+    const cache = new Map();
+    let chart = null;
+    let requestNumber = 0;
+
+    function setStatus(message, state) {
+        statusElement.textContent = message;
+        if (state) statusElement.dataset.state = state;
+        else statusElement.removeAttribute("data-state");
+    }
+
+    function numericValue(value) {
+        if (typeof value === "number") {
+            return Number.isFinite(value) ? value : null;
+        }
+        if (typeof value !== "string" || value.trim() === "") return null;
+        const parsed = Number(value);
+        return Number.isFinite(parsed) ? parsed : null;
+    }
+
+    function selectedSchools() {
+        return [...schoolsElement.querySelectorAll('input[type="checkbox"]:checked')]
+            .map(input => input.value);
+    }
+
+    function loadSchool(school) {
+        if (school === ORIGINAL_DATASET_SCHOOL) {
+            return waitForOriginalStudyRowsForSchoolFindings();
+        }
+        if (cache.has(school)) return cache.get(school);
+
+        const request = fetch(
+            `/api/school-submissions?school=${encodeURIComponent(school)}`
+        ).then(async response => {
+            if (!response.ok) {
+                const result = await response.json();
+                throw new Error(result.error || `Unable to load ${school}.`);
+            }
+            const rows = await response.json();
+            if (!Array.isArray(rows)) {
+                throw new Error(`The response data for ${school} is invalid.`);
+            }
+            return rows;
+        }).catch(error => {
+            cache.delete(school);
+            throw error;
+        });
+        cache.set(school, request);
+        return request;
+    }
+
+    function makePoints(rows, measure, metricKey) {
+        return rows.flatMap(row => {
+            const gpa = numericValue(row.GPA);
+            const sleepValue = numericValue(row[metricKey]);
+            if (gpa === null || gpa < 0 || gpa > 4 ||
+                sleepValue === null || !measure.valid(sleepValue)) {
+                return [];
+            }
+            return [{ x: sleepValue, y: gpa }];
+        });
+    }
+
+    async function renderSelectedSchools() {
+        const currentRequest = ++requestNumber;
+        chartContainer.hidden = true;
+        if (chart) {
+            chart.destroy();
+            chart = null;
+        }
+
+        const selected = selectedSchools();
+        const measure = measures[measureElement.value];
+        if (!selected.length) {
+            setStatus("Select one or more schools to view their responses.");
+            return;
+        }
+
+        setStatus("Checking valid responses…");
+
+        try {
+            const metricKey = measureElement.value;
+            const schoolData = await Promise.all(selected.map(async school => {
+                const rows = await loadSchool(school);
+                const points = makePoints(rows, measure, metricKey);
+                return {
+                    school,
+                    points,
+                    regression: calculateRegression(points)
+                };
+            }));
+            if (currentRequest !== requestNumber) return;
+
+            const originalDatasetNote = selected.includes(ORIGINAL_DATASET_SCHOOL)
+                ? " This selection uses the original St. Lawrence University study dataset."
+                : "";
+
+            if (!Number.isSafeInteger(MINIMUM_VALID_RESPONSES_PER_SCHOOL) ||
+                MINIMUM_VALID_RESPONSES_PER_SCHOOL < 1) {
+                setStatus("");
+                return;
+            }
+
+            const required = Math.max(3, MINIMUM_VALID_RESPONSES_PER_SCHOOL);
+            const insufficient = schoolData.filter(item =>
+                item.points.length < required ||
+                !Number.isFinite(item.regression.correlation)
+            );
+            if (insufficient.length) {
+                const details = insufficient.map(item => {
+                    const issue = item.points.length < required
+                        ? `${item.points.length} valid responses`
+                        : "no meaningful variation in the selected values";
+                    return `${item.school} (${issue})`;
+                });
+                setStatus(
+                    `${details.join(", ")}. At least ${required} valid paired responses ` +
+                    "with variation in both measures are needed; no chart is shown."
+                );
+                return;
+            }
+
+            const datasets = schoolData.map((item, index) => ({
+                label: item.school,
+                data: item.points,
+                backgroundColor: colors[index % colors.length],
+                borderColor: colors[index % colors.length],
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }));
+
+            chart = new Chart(canvas, {
+                type: "scatter",
+                data: { datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true, position: "bottom" },
+                        title: {
+                            display: true,
+                            text: `${measure.label} vs GPA by school`
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: context =>
+                                    `${context.dataset.label}: ${measure.label} ` +
+                                    `${context.parsed.x.toFixed(2)}, GPA ` +
+                                    `${context.parsed.y.toFixed(2)}`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: measure.label }
+                        },
+                        y: {
+                            min: 0,
+                            max: 4,
+                            title: { display: true, text: "GPA (0–4 scale)" }
+                        }
+                    }
+                }
+            });
+            chartContainer.hidden = false;
+            if (typeof applySleepStudyChartTheme === "function") {
+                applySleepStudyChartTheme(chart);
+                chart.update("none");
+            }
+
+            const correlations = schoolData.map(item =>
+                `${item.school}: r = ${item.regression.correlation.toFixed(2)} ` +
+                `(n = ${item.points.length})`
+            );
+            setStatus(
+                `${correlations.join("; ")}. Correlations describe associations ` +
+                `in these submissions.${originalDatasetNote} They do not establish causation.`
+            );
+        } catch (error) {
+            if (currentRequest !== requestNumber) return;
+            console.error("School findings could not be loaded.", error);
+            setStatus(
+                `School findings could not be loaded: ${error.message}. ` +
+                "Check the server and reload the page.",
+                "error"
+            );
+        }
+    }
+
+    function addSchoolChoice(school, index, checked = false) {
+        const label = document.createElement("label");
+        label.className = "fd-school-choice";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.value = school;
+        checkbox.id = `school-finding-${index}`;
+        checkbox.checked = checked;
+        checkbox.addEventListener("change", renderSelectedSchools);
+
+        const name = document.createElement("span");
+        name.textContent = school;
+        label.append(checkbox, name);
+        schoolsElement.append(label);
+    }
+
+    async function loadSchools() {
+        try {
+            const response = await fetch("/api/schools");
+            if (!response.ok) {
+                throw new Error(`Unable to load school names (${response.status}).`);
+            }
+            const schools = await response.json();
+            if (!Array.isArray(schools) ||
+                schools.some(school => typeof school !== "string")) {
+                throw new Error("The school list returned by the server is invalid.");
+            }
+
+            schoolsElement.replaceChildren();
+            schools.forEach(addSchoolChoice);
+            if (!schools.length) {
+                setStatus("");
+                return;
+            }
+            setStatus("");
+        } catch (error) {
+            console.error("School list could not be loaded.", error);
+            schoolsElement.replaceChildren();
+            addSchoolChoice(ORIGINAL_DATASET_SCHOOL, 0, true);
+            setStatus(
+                `School submissions could not be loaded: ${error.message}. ` +
+                "Showing the original St. Lawrence University dataset instead."
+            );
+            renderSelectedSchools();
+        }
+    }
+
+    measureElement.addEventListener("change", renderSelectedSchools);
+    loadSchools();
+}
+
+document.addEventListener("DOMContentLoaded", initializeSchoolFindings);

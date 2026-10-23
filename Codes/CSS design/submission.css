@@ -23,7 +23,7 @@
     letter-spacing: 0.18em;
 }
 
-.submission-heading h2 {
+.submission-heading h1 {
     margin: 8px 0;
     color: #12346b;
     font-size: clamp(1.8rem, 4vw, 2.6rem);

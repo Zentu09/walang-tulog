@@ -15,6 +15,7 @@ async function loadCsv() {
 
         const csvText = await response.text();
         const rows = cleanRows(parseCsv(csvText));
+        setOriginalStudyRowsForSchoolFindings(rows);
 
         // Separate try blocks so one broken section doesn't stop the other.
         try {
@@ -31,6 +32,7 @@ async function loadCsv() {
         }
     } catch (error) {
         console.error(error);
+        failOriginalStudyRowsForSchoolFindings(error);
         showFindingsError("Unable to load the CSV file. Run the website using Live Server.");
     }
 }

@@ -33,13 +33,21 @@
                 <nav id="primary-navigation" aria-label="Main navigation">
                     <ul>
                         <li><a href="index.html#home">Home</a></li>
-                        <li><a href="study.html#about-study">About Study</a></li>
-                        <li><a href="study.html#sleep-habits">Sleep Habits</a></li>
-                        <li><a href="study.html#performance">Performance</a></li>
+                        <li class="nav-dropdown">
+                            <button class="nav-dropdown-toggle" type="button"
+                                aria-expanded="false" aria-controls="study-nav-links">
+                                Study Sections
+                            </button>
+                            <ul class="nav-submenu" id="study-nav-links">
+                                <li><a href="study.html#about-study">About Study</a></li>
+                                <li><a href="study.html#sleep-habits">Sleep Habits</a></li>
+                                <li><a href="study.html#performance">Performance</a></li>
+                                <li><a href="study.html#findings">Findings</a></li>
+                            </ul>
+                        </li>
                         <li><a href="submission.html" aria-current="page">Submit Data</a></li>
-                        <li><a href="study.html#findings">Findings</a></li>
                         <li><a href="comparison.html">Compare Sleep</a></li>
-                        <li><a href="study.html#about">About Us</a></li>
+                        
                     </ul>
                 </nav>
 
@@ -60,7 +68,8 @@
 
                 <form id="schoolSubmissionForm" class="submission-form">
                     <div class="submission-fields">
-                        <label for="schoolName">School name
+                        <label for="schoolName">Full school name
+                            <span>Enter the complete official school name, not an acronym. Include your campus if applicable.</span>
                             <input id="schoolName" name="school" type="text" maxlength="120"
                                 list="schoolSuggestions" autocomplete="organization" required>
                         </label>
@@ -99,6 +108,7 @@
                                 <option value="Owl">Owl</option>
                                 <option value="Neither">Neither</option>
                             </select>
+                            <span>Lark: naturally alert earlier in the day. Owl: naturally more alert later in the day. Neither: no strong preference for either time.</span>
                         </label>
                     </div>
 
