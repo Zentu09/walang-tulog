@@ -1,4 +1,5 @@
 let latestSchoolSearchSequence = 0;
+let approvedSchoolNamesPromise;
 
 document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("schoolSubmissionForm");
@@ -33,20 +34,52 @@ async function loadSchoolSuggestions(input, message, sequence) {
     const schoolList = document.getElementById("schoolSuggestions");
 
     try {
-        const query = input.value.trim().replace(/\s+/gu, " ");
-        const response = await fetch(
-            `/api/approved-schools?search=${encodeURIComponent(query)}`
+        const query = input.value.normalize("NFC").trim().replace(/\s+/gu, " ");
+        approvedSchoolNamesPromise ||= fetch("/Codes/Js/approved-schools.json")
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(
+                        `The approved school list could not be loaded (${response.status}).`
+                    );
+                }
+                return response.json();
+            })
+            .then(schools => {
+                if (!Array.isArray(schools) ||
+                    !schools.every(school => typeof school === "string")) {
+                    throw new Error("The approved school list has an invalid format.");
+                }
+                return schools;
+            })
+            .catch(error => {
+                approvedSchoolNamesPromise = null;
+                throw error;
+            });
+        const schools = await approvedSchoolNamesPromise;
+        if (sequence !== latestSchoolSearchSequence) return;
+
+        const normalizedQuery = query.toLocaleLowerCase("en-US");
+        const exactSchool = schools.find(
+            school => school.toLocaleLowerCase("en-US") === normalizedQuery
         );
-        if (!response.ok) {
-            throw new Error(
-                `The school-verification API returned ${response.status}. Open the site at http://127.0.0.1:3000 and restart the Node server if needed.`
-            );
+        const matches = !query
+            ? ["St. Lawrence University"]
+            : schools.filter(
+                school => school.toLocaleLowerCase("en-US").startsWith(normalizedQuery)
+            ).slice(0, 50);
+        if (matches.length < 50 && query) {
+            for (const school of schools) {
+                const key = school.toLocaleLowerCase("en-US");
+                if (key.includes(normalizedQuery) && !key.startsWith(normalizedQuery) &&
+                    !matches.includes(school)) {
+                    matches.push(school);
+                }
+                if (matches.length === 50) break;
+            }
         }
 
-        const result = await response.json();
-        if (sequence !== latestSchoolSearchSequence) return;
         schoolList.replaceChildren();
-        for (const school of result.schools) {
+        for (const school of matches) {
             const option = document.createElement("option");
             option.value = school;
             schoolList.append(option);
@@ -56,11 +89,11 @@ async function loadSchoolSuggestions(input, message, sequence) {
             input.setCustomValidity("");
             message.textContent = "Type your school's name to search the approved list.";
             message.dataset.state = "";
-        } else if (result.exactMatch) {
+        } else if (exactSchool) {
             input.setCustomValidity("");
             message.textContent = "This school is on the approved list.";
             message.dataset.state = "success";
-        } else if (result.schools.length > 0) {
+        } else if (matches.length > 0) {
             input.setCustomValidity(
                 "Choose the complete approved school name from the suggestions."
             );
@@ -78,11 +111,10 @@ async function loadSchoolSuggestions(input, message, sequence) {
         console.error("School suggestions could not be loaded.", error);
         if (sequence !== latestSchoolSearchSequence) return;
         input.setCustomValidity(
-            "School verification is unavailable. Start the Node server and open http://127.0.0.1:3000."
+            "The approved school list is unavailable. Refresh the page or contact the study team."
         );
-        message.textContent = error instanceof TypeError
-            ? "School verification is unavailable. Start the Node server with npm start, then open http://127.0.0.1:3000 (not VS Code Live Server)."
-            : error.message;
+        message.textContent =
+            `The approved school list could not be loaded. Refresh the page and try again. ${error.message}`;
         message.dataset.state = "error";
     }
 }

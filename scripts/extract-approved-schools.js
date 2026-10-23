@@ -6,7 +6,7 @@ const sourcePath = path.join(
     projectFolder,
     "Codes",
     "Js",
-    "School-Name-Masterlist.pdf"
+    "school_masterlist.csv"
 );
 const outputPath = path.join(
     projectFolder,
@@ -15,43 +15,78 @@ const outputPath = path.join(
     "approved-schools.json"
 );
 
-async function extractApprovedSchools() {
-    const { getDocument } = await import("pdfjs-dist/legacy/build/pdf.mjs");
-    const document = await getDocument({
-        data: new Uint8Array(await fs.readFile(sourcePath)),
-        useSystemFonts: true,
-        disableFontFace: true,
-        verbosity: 0
-    }).promise;
-    const schools = new Set();
+function parseCsv(csvText) {
+    const rows = [];
+    let row = [];
+    let value = "";
+    let insideQuotes = false;
 
-    try {
-        for (let pageNumber = 1; pageNumber <= document.numPages; pageNumber += 1) {
-            const page = await document.getPage(pageNumber);
-            const content = await page.getTextContent();
+    for (let index = 0; index < csvText.length; index += 1) {
+        const character = csvText[index];
 
-            for (const item of content.items) {
-                const schoolColumnX = item.transform[4];
-                if (schoolColumnX < 185 || schoolColumnX >= 309) continue;
-
-                const match = item.str.trim().match(/^\d{6}\s+(.+)$/u);
-                if (!match) continue;
-
-                const school = match[1].normalize("NFC").trim().replace(/\s+/gu, " ");
-                if (school.length >= 2 && school.length <= 120) schools.add(school);
-            }
+        if (insideQuotes && character === '"' && csvText[index + 1] === '"') {
+            value += '"';
+            index += 1;
+        } else if (character === '"') {
+            insideQuotes = !insideQuotes;
+        } else if (!insideQuotes && character === ",") {
+            row.push(value);
+            value = "";
+        } else if (!insideQuotes && (character === "\n" || character === "\r")) {
+            if (character === "\r" && csvText[index + 1] === "\n") index += 1;
+            row.push(value);
+            rows.push(row);
+            row = [];
+            value = "";
+        } else {
+            value += character;
         }
-    } finally {
-        await document.destroy();
     }
 
+    if (insideQuotes) {
+        throw new Error("The school masterlist CSV has an unfinished quoted value.");
+    }
+
+    if (value || row.length) {
+        row.push(value);
+        rows.push(row);
+    }
+    return rows;
+}
+
+async function extractApprovedSchools() {
+    const csvText = await fs.readFile(sourcePath, "utf8");
+    const rows = parseCsv(csvText.replace(/^\uFEFF/u, ""));
+    const headers = rows.shift();
+    const schoolNameIndex = headers.indexOf("school_name_candidate");
+    if (schoolNameIndex < 0) {
+        throw new Error("The CSV is missing its school_name_candidate column.");
+    }
+
+    const schools = new Map();
+    for (const row of rows) {
+        const school = (row[schoolNameIndex] || "")
+            .normalize("NFC")
+            .trim()
+            .replace(/\s+/gu, " ");
+        if (school.length < 2 || school.length > 120) continue;
+
+        const key = school.toLocaleLowerCase("en-US");
+        if (!schools.has(key)) schools.set(key, school);
+    }
+
+    const originalSchool = "St. Lawrence University";
+    schools.set(originalSchool.toLocaleLowerCase("en-US"), originalSchool);
     if (schools.size < 1000) {
         throw new Error(
-            "The school masterlist could not be read. Verify that the PDF contains the expected school list."
+            "The school masterlist CSV could not be read. Verify that it contains the expected school names."
         );
     }
 
-    await fs.writeFile(outputPath, `${JSON.stringify([...schools], null, 2)}\n`);
+    const formattedNames = [...schools.values()]
+        .map(school => `  ${JSON.stringify(school)}`)
+        .join(",\n");
+    await fs.writeFile(outputPath, `[\n${formattedNames}\n]\n`);
     console.log(`Extracted ${schools.size} approved school names.`);
 }
 

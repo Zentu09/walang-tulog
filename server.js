@@ -105,7 +105,7 @@ async function loadApprovedSchools() {
     if (!Array.isArray(APPROVED_SCHOOL_NAMES) ||
         APPROVED_SCHOOL_NAMES.length < 1000) {
         throw new Error(
-            "The approved school list is missing or invalid. Regenerate it from the school masterlist PDF."
+            "The approved school list is missing or invalid. Regenerate it from the school masterlist CSV."
         );
     }
 
@@ -406,6 +406,7 @@ function getContentType(filePath) {
         ".ico": "image/x-icon",
         ".jpeg": "image/jpeg",
         ".jpg": "image/jpeg",
+        ".json": "application/json; charset=utf-8",
         ".js": "text/javascript; charset=utf-8",
         ".png": "image/png",
         ".svg": "image/svg+xml",

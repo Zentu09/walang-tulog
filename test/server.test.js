@@ -91,7 +91,7 @@ test("the server validates required fields and consent", () => {
     );
 });
 
-test("the approved-school search verifies PDF names and the original study school", async () => {
+test("the approved-school search verifies CSV names and the original study school", async () => {
     const pdfSchoolResponse = await fetch(
         `${baseUrl}/api/approved-schools?search=${encodeURIComponent("bacarra   ces")}`
     );
@@ -195,6 +195,26 @@ test("the website is served but the private submissions file is not", async () =
         rootResponse.headers.get("location"),
         "/Codes/Template/index.html"
     );
+
+    const approvedListResponse = await fetch(
+        `${baseUrl}/Codes/Js/approved-schools.json`
+    );
+    assert.equal(approvedListResponse.status, 200);
+    assert.match(
+        approvedListResponse.headers.get("content-type"),
+        /application\/json/u
+    );
+    const approvedNames = await approvedListResponse.json();
+    assert.ok(approvedNames.includes("Bacarra CES"));
+    assert.ok(approvedNames.includes("St. Lawrence University"));
+
+    const submissionScriptResponse = await fetch(
+        `${baseUrl}/Codes/Js/schoolSubmission.js`
+    );
+    assert.equal(submissionScriptResponse.status, 200);
+    const submissionScript = await submissionScriptResponse.text();
+    assert.match(submissionScript, /\/Codes\/Js\/approved-schools\.json/u);
+    assert.doesNotMatch(submissionScript, /\/api\/approved-schools/u);
 
     const pageResponse = await fetch(`${baseUrl}/Codes/Template/submission.html`);
     assert.equal(pageResponse.status, 200);
