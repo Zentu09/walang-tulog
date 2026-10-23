@@ -1,7 +1,8 @@
 {
   "scripts": {
     "start": "node server.js",
-    "test": "node --test"
+    "test": "node --test",
+    "extract-schools": "node scripts/extract-approved-schools.js"
   },
   "dependencies": {
     "chart.js": "^4.5.1",

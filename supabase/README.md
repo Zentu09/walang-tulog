@@ -1,5 +1,9 @@
 # Supabase setup
 
+The Vercel API loads `Codes/Js/approved-schools.json`; it does not parse the PDF
+at request time. To regenerate the list after replacing the source PDF, run
+`npm run extract-schools`, commit the updated JSON, and redeploy.
+
 1. **Create the table:** Supabase Dashboard > SQL Editor > paste `supabase/schema.sql` > Run.
 2. **Add your keys:** copy `supabase/.env.example` to the project root as `.env`, then fill in
    `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` (Project Settings > API). `.env` is git-ignored.

@@ -3,14 +3,10 @@ const fs = require("node:fs/promises");
 const path = require("node:path");
 const ExcelJS = require("exceljs");
 const supabase = require("./supabase/client");
+const APPROVED_SCHOOL_NAMES = require("./Codes/Js/approved-schools.json");
 
 const PROJECT_FOLDER = __dirname;
 const WEBSITE_FOLDER = path.join(PROJECT_FOLDER, "Codes");
-const SCHOOL_MASTERLIST_FILE = path.join(
-    WEBSITE_FOLDER,
-    "Js",
-    "School-Name-Masterlist.pdf"
-);
 const DATA_FILE = process.env.SLEEP_STUDY_EXCEL_FILE ||
     path.join(PROJECT_FOLDER, "data", "SchoolSubmissions.xlsx");
 const LEGACY_CSV_FILE = process.env.SLEEP_STUDY_CSV_FILE ||
@@ -104,42 +100,18 @@ function getSchoolKey(school) {
 }
 
 async function loadApprovedSchools() {
-    const { getDocument } = await import("pdfjs-dist/legacy/build/pdf.mjs");
-    const document = await getDocument({
-        data: new Uint8Array(await fs.readFile(SCHOOL_MASTERLIST_FILE)),
-        useSystemFonts: true,
-        disableFontFace: true,
-        verbosity: 0
-    }).promise;
     const schools = new Map();
 
-    try {
-        for (let pageNumber = 1; pageNumber <= document.numPages; pageNumber += 1) {
-            const page = await document.getPage(pageNumber);
-            const content = await page.getTextContent();
-
-            for (const item of content.items) {
-                const schoolColumnX = item.transform[4];
-                if (schoolColumnX < 185 || schoolColumnX >= 309) continue;
-
-                const match = item.str.trim().match(/^\d{6}\s+(.+)$/u);
-                if (!match) continue;
-
-                const school = match[1].normalize("NFC").trim().replace(/\s+/gu, " ");
-                if (school.length < 2 || school.length > 120) continue;
-
-                const key = getSchoolKey(school);
-                if (!schools.has(key)) schools.set(key, school);
-            }
-        }
-    } finally {
-        await document.destroy();
+    if (!Array.isArray(APPROVED_SCHOOL_NAMES) ||
+        APPROVED_SCHOOL_NAMES.length < 1000) {
+        throw new Error(
+            "The approved school list is missing or invalid. Regenerate it from the school masterlist PDF."
+        );
     }
 
-    if (schools.size < 1000) {
-        throw new Error(
-            "The school masterlist could not be read. Verify that the PDF contains the expected school list."
-        );
+    for (const school of APPROVED_SCHOOL_NAMES) {
+        const key = getSchoolKey(school);
+        if (!schools.has(key)) schools.set(key, school);
     }
 
     schools.set(getSchoolKey(ORIGINAL_STUDY_SCHOOL), ORIGINAL_STUDY_SCHOOL);

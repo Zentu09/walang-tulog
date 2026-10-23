@@ -6,7 +6,7 @@
   ],
   "functions": {
     "api/**/*.js": {
-      "includeFiles": "Codes/Js/School-Name-Masterlist.pdf",
+      "includeFiles": "Codes/Js/approved-schools.json",
       "maxDuration": 30
     }
   }
