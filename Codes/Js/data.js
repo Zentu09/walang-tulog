@@ -70,3 +70,41 @@ function cleanRows(rows) {
             return row;
         });
 }
+
+function applySleepStudyChartTheme(chart) {
+    const isDark = document.documentElement.dataset.theme === "dark";
+    const textColor = isDark ? "#c5d3ea" : "#666";
+    const mutedColor = isDark ? "#b3c4e2" : "#6681a5";
+    const gridColor = isDark ? "rgba(179, 196, 226, 0.18)" : "#dce9f8";
+
+    chart.options.color = textColor;
+
+    Object.values(chart.options.scales || {}).forEach(scale => {
+        scale.ticks = { ...scale.ticks, color: mutedColor };
+        scale.grid = { ...scale.grid, color: gridColor };
+
+        if (scale.title) {
+            scale.title.color = mutedColor;
+        }
+    });
+
+    const legendLabels = chart.options.plugins?.legend?.labels;
+    if (legendLabels) {
+        legendLabels.color = isDark ? "#c5d3ea" : "#183765";
+    }
+
+    if (chart.options.plugins?.title) {
+        chart.options.plugins.title.color = textColor;
+    }
+}
+
+function updateSleepStudyChartTheme() {
+    if (!window.Chart) return;
+
+    Object.values(Chart.instances).forEach(chart => {
+        applySleepStudyChartTheme(chart);
+        chart.update("none");
+    });
+}
+
+window.addEventListener("sleep-study-theme-change", updateSleepStudyChartTheme);

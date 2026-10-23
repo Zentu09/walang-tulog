@@ -1,14 +1,14 @@
 .comparison-page {
     box-sizing: border-box;
     min-height: 100vh;
-    padding: 90px 4% 80px;
+    padding: 90px var(--page-gutter) 80px;
     color: #173765;
 }
 
 .comparison-heading,
 .comparison-form,
 .comparison-results {
-    max-width: 1080px;
+    max-width: var(--content-max-width);
     margin-right: auto;
     margin-left: auto;
 }
@@ -334,7 +334,7 @@
 
 @media (max-width: 780px) {
     .comparison-page {
-        padding: 24px 5% 60px;
+        padding: 24px var(--page-gutter) 60px;
     }
 
     .comparison-fields,

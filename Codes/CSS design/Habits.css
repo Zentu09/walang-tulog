@@ -8,14 +8,14 @@
 .habits-page {
     height: auto;
     min-height: 0;
-    padding: 108px 5% 80px;
+    padding: 108px var(--page-gutter) 80px;
     box-sizing: border-box;
 }
 
 .sleep-hab {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    max-width: 1080px;
+    max-width: var(--content-max-width);
     margin: 22px auto 0;
     gap: 20px;
 }
@@ -98,7 +98,7 @@
 }
 
 .hab {    
-    max-width: 1080px;
+    max-width: var(--content-max-width);
     margin: 0 auto;
     color: #242863;
     font-size: clamp(2rem, 4vw, 3rem);
@@ -106,7 +106,7 @@
 }
 
 .hab3 { 
-    max-width: 1080px;
+    max-width: var(--content-max-width);
     margin: 52px auto 0;
     font-weight: bold;
     color: #242863;
@@ -114,7 +114,7 @@
 }   
 
 .hab2 {   
-    max-width: 1080px;
+    max-width: var(--content-max-width);
     margin: 8px auto 0;
     color: #242863;
     font-size: 20px;     
@@ -138,7 +138,7 @@
 
 @media (max-width: 780px) {
     .habits-page {
-        padding: 28px 5% 60px;
+        padding: 28px var(--page-gutter) 60px;
     }
 
     .sleep-hab {
@@ -157,5 +157,3 @@
         padding-top: 28px;
     }
 }
-
-

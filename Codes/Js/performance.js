@@ -19,7 +19,7 @@ function createPerformanceCharts(rows) {
     const averageGpa =
         validGpas.reduce((sum, gpa) => sum + gpa, 0) / validGpas.length;
 
-    new Chart(document.getElementById("gpaBarChart"), {
+    const barChart = new Chart(document.getElementById("gpaBarChart"), {
         type: "bar",
         data: {
             labels: ranges,
@@ -45,8 +45,10 @@ function createPerformanceCharts(rows) {
             }
         }
     });
+    applySleepStudyChartTheme(barChart);
+    barChart.update("none");
 
-    new Chart(document.getElementById("gpaPieChart"), {
+    const pieChart = new Chart(document.getElementById("gpaPieChart"), {
         type: "doughnut",
         data: {
             labels: ranges,
@@ -77,6 +79,8 @@ function createPerformanceCharts(rows) {
             }
         }
     });
+    applySleepStudyChartTheme(pieChart);
+    pieChart.update("none");
 
     document.getElementById("averageGpa").textContent =
         averageGpa.toFixed(2);

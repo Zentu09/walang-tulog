@@ -1,0 +1,256 @@
+html[data-theme="dark"] {
+    color-scheme: dark;
+}
+
+html[data-theme="dark"] body {
+    color: #e3edff;
+    background: radial-gradient(circle at 85% 10%, #192b51 0, transparent 24%),
+        linear-gradient(135deg, #0b1428, #111f3a);
+}
+
+html[data-theme="dark"] .header-section,
+html[data-theme="dark"] .ulo {
+    background: #050d20;
+}
+
+html[data-theme="dark"] .about-study-page .te,
+html[data-theme="dark"] .about-study-page .te2,
+html[data-theme="dark"] .ab-te .t,
+html[data-theme="dark"] .hab,
+html[data-theme="dark"] .hab3,
+html[data-theme="dark"] .hab2,
+html[data-theme="dark"] #performance > .t,
+html[data-theme="dark"] .findings-title h2,
+html[data-theme="dark"] .comparison-heading h1,
+html[data-theme="dark"] .results-heading h2 {
+    color: #e3edff;
+}
+
+html[data-theme="dark"] .ab-te .t2,
+html[data-theme="dark"] .card4 .t3,
+html[data-theme="dark"] .card5 .t3,
+html[data-theme="dark"] .findings-title p,
+html[data-theme="dark"] .comparison-heading p,
+html[data-theme="dark"] .results-heading p,
+html[data-theme="dark"] .privacy-note {
+    color: #b3c4e2;
+}
+
+html[data-theme="dark"] .card3,
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .chart-card,
+html[data-theme="dark"] .average-grade,
+html[data-theme="dark"] .findings-chart-card,
+html[data-theme="dark"] .correlation-card,
+html[data-theme="dark"] .meaning-card,
+html[data-theme="dark"] .comparison-form,
+html[data-theme="dark"] .metric-result,
+html[data-theme="dark"] .gpa-bucket-result {
+    border-color: #2a3d60;
+    background: #16243d;
+    color: #e3edff;
+}
+
+html[data-theme="dark"] .card4,
+html[data-theme="dark"] .card5 {
+    border-color: #2a3d60;
+    background: #16243d;
+}
+
+html[data-theme="dark"] .icc {
+    background: #dcebff;
+}
+
+html[data-theme="dark"] .icc .fee,
+html[data-theme="dark"] .fer,
+html[data-theme="dark"] .ico {
+    color: #4f91e8;
+}
+
+html[data-theme="dark"] .card .t,
+html[data-theme="dark"] .card4 .t,
+html[data-theme="dark"] .card4 .t2,
+html[data-theme="dark"] .card5 .t,
+html[data-theme="dark"] .card5 .t2,
+html[data-theme="dark"] .chart-card h3,
+html[data-theme="dark"] .average-grade h3,
+html[data-theme="dark"] .average-grade strong,
+html[data-theme="dark"] .chart-heading h3,
+html[data-theme="dark"] .duration-preview strong,
+html[data-theme="dark"] .metric-result h4,
+html[data-theme="dark"] .gpa-bucket-result h4 {
+    color: #e3edff;
+}
+
+html[data-theme="dark"] .card .t2,
+html[data-theme="dark"] .average-grade p,
+html[data-theme="dark"] .average-grade .t2,
+html[data-theme="dark"] .data-download,
+html[data-theme="dark"] .correlation-card p,
+html[data-theme="dark"] .meaning-card p,
+html[data-theme="dark"] .correlation-card span,
+html[data-theme="dark"] .gpa-bucket-result p,
+html[data-theme="dark"] .metric-disclaimer,
+html[data-theme="dark"] .bucket-disclaimer {
+    color: #b3c4e2;
+}
+
+html[data-theme="dark"] .bott {
+    background-color: #202f4a;
+    background-image: none;
+}
+
+html[data-theme="dark"] .bott .t,
+html[data-theme="dark"] .bott .fa-arrow-right-long,
+html[data-theme="dark"] .bott .fa-diamond {
+    color: #e3edff;
+}
+
+html[data-theme="dark"] .vline,
+html[data-theme="dark"] .vline2 {
+    background-color: #526783;
+    border-color: #526783;
+}
+
+html[data-theme="dark"] .findings-title small,
+html[data-theme="dark"] .comparison-eyebrow,
+html[data-theme="dark"] .summary-card small {
+    color: #74aaff;
+}
+
+html[data-theme="dark"] .meaning-card h3 {
+    color: #e3edff;
+}
+
+html[data-theme="dark"] .comparison-heading a {
+    color: #9bc4ff;
+}
+
+html[data-theme="dark"] .summary-card {
+    border-color: #2a3d60;
+    background: #16243d;
+    color: #e3edff;
+}
+
+html[data-theme="dark"] .summary-card small {
+    color: #74aaff;
+}
+
+html[data-theme="dark"] .summary-card h3 {
+    color: #e3edff;
+}
+
+html[data-theme="dark"] .summary-card p {
+    color: #b3c4e2;
+}
+
+html[data-theme="dark"] .summary-icon {
+    background: #263b5d;
+    color: #a9ccff;
+}
+
+html[data-theme="dark"] .result-icon {
+    background: #dcebff;
+    color: #2874df;
+}
+
+html[data-theme="dark"] .correlation-card strong,
+html[data-theme="dark"] .gpa-bucket-average,
+html[data-theme="dark"] .metric-summary strong {
+    color: #74aaff;
+}
+
+html[data-theme="dark"] .correlation-card b,
+html[data-theme="dark"] .meaning-card span,
+html[data-theme="dark"] .metric-feedback {
+    background: #263b5d;
+    color: #a9ccff;
+}
+
+html[data-theme="dark"] .correlation-divider {
+    border-color: #526783;
+}
+
+html[data-theme="dark"] .chart-heading {
+    background: linear-gradient(90deg, #202f4a, #16243d);
+}
+
+html[data-theme="dark"] .chart-legend {
+    color: #b3c4e2;
+}
+
+html[data-theme="dark"] .data-download {
+    border-color: #2a3d60;
+    background: #16243d;
+}
+
+html[data-theme="dark"] .habit-selector {
+    border-color: #2a3d60;
+    background: #202f4a;
+}
+
+html[data-theme="dark"] .habit-selector label,
+html[data-theme="dark"] .comparison-fields label {
+    color: #d2def2;
+}
+
+html[data-theme="dark"] .habit-selector select,
+html[data-theme="dark"] .comparison-fields input {
+    border-color: #405777;
+    background: #101c31;
+    color: #e3edff;
+}
+
+html[data-theme="dark"] .optional-gpa > span,
+html[data-theme="dark"] .optional-gpa small,
+html[data-theme="dark"] .duration-preview span,
+html[data-theme="dark"] .distribution-legend {
+    color: #b3c4e2;
+}
+
+html[data-theme="dark"] .duration-preview {
+    background: #202f4a;
+}
+
+html[data-theme="dark"] .metric-summary span,
+html[data-theme="dark"] .metric-disclaimer,
+html[data-theme="dark"] .bucket-disclaimer,
+html[data-theme="dark"] .distribution-legend {
+    color: #b3c4e2;
+}
+
+html[data-theme="dark"] .metric-feedback {
+    background: #263b5d;
+    color: #a9ccff;
+}
+
+html[data-theme="dark"] .distribution-plot {
+    border-color: #526783;
+}
+
+html[data-theme="dark"] .wellbeing-note {
+    border-color: #365947;
+    background: #172f2a;
+}
+
+html[data-theme="dark"] .wellbeing-note > span,
+html[data-theme="dark"] .wellbeing-note h3 {
+    color: #93d6ad;
+}
+
+html[data-theme="dark"] .wellbeing-note p {
+    color: #b8d8c4;
+}
+
+html[data-theme="dark"] .comparison-submit {
+    background: #2874df;
+}
+
+html[data-theme="dark"] .comparison-submit:hover,
+html[data-theme="dark"] .comparison-submit:focus-visible {
+    background: #4f91e8;
+}
+
+html[data-theme="dark"] .comparison-error {
+    color: #ffaaa5;
+}

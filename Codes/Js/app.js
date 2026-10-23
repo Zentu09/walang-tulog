@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
-    if (document.getElementById("sleepHabitSelect")) {
-        createScatterCharts();
+    // The findings section now uses #habitPicker instead of the old <select>.
+    if (document.getElementById("habitPicker")) {
         loadCsv();
     }
 });
@@ -16,8 +16,30 @@ async function loadCsv() {
         const csvText = await response.text();
         const rows = cleanRows(parseCsv(csvText));
 
-        createPerformanceCharts(rows);
+        // Separate try blocks so one broken section doesn't stop the other.
+        try {
+            createPerformanceCharts(rows);
+        } catch (error) {
+            console.error("Performance charts failed:", error);
+        }
+
+        try {
+            createScatterCharts(rows);
+        } catch (error) {
+            console.error("Findings charts failed:", error);
+            showFindingsError("Something went wrong while drawing the findings charts.");
+        }
     } catch (error) {
         console.error(error);
+        showFindingsError("Unable to load the CSV file. Run the website using Live Server.");
+    }
+}
+
+function showFindingsError(message) {
+    const status = document.getElementById("fdChartStatus");
+
+    if (status) {
+        status.textContent = message;
+        status.hidden = false;
     }
 }
