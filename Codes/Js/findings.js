@@ -645,12 +645,13 @@ function createScatterCharts(rows) {
 
 function initializeSchoolFindings() {
     const schoolsElement = document.getElementById("schoolFindingsSchools");
+    const schoolOptionsElement = document.getElementById("schoolFindingsSchoolOptions");
     const measureElement = document.getElementById("schoolSleepMeasure");
     const statusElement = document.getElementById("schoolFindingsStatus");
     const canvas = document.getElementById("schoolScatterChart");
     const chartContainer = document.getElementById("schoolChartContainer");
 
-    if (!schoolsElement || !measureElement || !statusElement ||
+    if (!schoolsElement || !schoolOptionsElement || !measureElement || !statusElement ||
         !canvas || !chartContainer) return;
 
     const ORIGINAL_DATASET_SCHOOL = "St. Lawrence University (original study dataset)";
@@ -674,6 +675,7 @@ function initializeSchoolFindings() {
     };
     const colors = ["#2563c9", "#a45bc4", "#df8b24", "#17866b", "#c84d58"];
     const cache = new Map();
+    const availableSchools = new Set([ORIGINAL_DATASET_SCHOOL]);
     let chart = null;
     let requestNumber = 0;
 
@@ -692,9 +694,15 @@ function initializeSchoolFindings() {
         return Number.isFinite(parsed) ? parsed : null;
     }
 
-    function selectedSchools() {
-        return [...schoolsElement.querySelectorAll('input[type="checkbox"]:checked')]
-            .map(input => input.value);
+    function selectedSchool() {
+        const entered = schoolsElement.value.trim();
+        if (!entered) return ORIGINAL_DATASET_SCHOOL;
+        for (const school of availableSchools) {
+            if (school.toLocaleLowerCase("en-US") === entered.toLocaleLowerCase("en-US")) {
+                return school;
+            }
+        }
+        return null;
     }
 
     function loadSchool(school) {
@@ -743,10 +751,13 @@ function initializeSchoolFindings() {
             chart = null;
         }
 
-        const selected = selectedSchools();
+        const selectedSchoolName = selectedSchool();
         const measure = measures[measureElement.value];
-        if (!selected.length) {
-            setStatus("Select one or more schools to view their responses.");
+        if (!selectedSchoolName) {
+            setStatus(
+                "Choose a school from the suggestions. Leave the field blank to use " +
+                "the original study dataset."
+            );
             return;
         }
 
@@ -754,18 +765,16 @@ function initializeSchoolFindings() {
 
         try {
             const metricKey = measureElement.value;
-            const schoolData = await Promise.all(selected.map(async school => {
-                const rows = await loadSchool(school);
-                const points = makePoints(rows, measure, metricKey);
-                return {
-                    school,
-                    points,
-                    regression: calculateRegression(points)
-                };
-            }));
+            const rows = await loadSchool(selectedSchoolName);
+            const points = makePoints(rows, measure, metricKey);
+            const schoolData = [{
+                school: selectedSchoolName,
+                points,
+                regression: calculateRegression(points)
+            }];
             if (currentRequest !== requestNumber) return;
 
-            const originalDatasetNote = selected.includes(ORIGINAL_DATASET_SCHOOL)
+            const originalDatasetNote = selectedSchoolName === ORIGINAL_DATASET_SCHOOL
                 ? " This selection uses the original St. Lawrence University study dataset."
                 : "";
 
@@ -861,21 +870,12 @@ function initializeSchoolFindings() {
         }
     }
 
-    function addSchoolChoice(school, index, checked = false) {
-        const label = document.createElement("label");
-        label.className = "fd-school-choice";
-
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.value = school;
-        checkbox.id = `school-finding-${index}`;
-        checkbox.checked = checked;
-        checkbox.addEventListener("change", renderSelectedSchools);
-
-        const name = document.createElement("span");
-        name.textContent = school;
-        label.append(checkbox, name);
-        schoolsElement.append(label);
+    function addSchoolOption(school) {
+        if (availableSchools.has(school)) return;
+        availableSchools.add(school);
+        const option = document.createElement("option");
+        option.value = school;
+        schoolOptionsElement.append(option);
     }
 
     async function loadSchools() {
@@ -890,26 +890,31 @@ function initializeSchoolFindings() {
                 throw new Error("The school list returned by the server is invalid.");
             }
 
-            schoolsElement.replaceChildren();
-            schools.forEach(addSchoolChoice);
-            if (!schools.length) {
-                setStatus("");
-                return;
-            }
-            setStatus("");
+            schools.forEach(addSchoolOption);
+            renderSelectedSchools();
         } catch (error) {
             console.error("School list could not be loaded.", error);
-            schoolsElement.replaceChildren();
-            addSchoolChoice(ORIGINAL_DATASET_SCHOOL, 0, true);
             setStatus(
                 `School submissions could not be loaded: ${error.message}. ` +
                 "Showing the original St. Lawrence University dataset instead."
             );
-            renderSelectedSchools();
         }
     }
 
+    schoolsElement.addEventListener("input", renderSelectedSchools);
+    schoolsElement.addEventListener("change", () => {
+        const selected = selectedSchool();
+        if (selected) schoolsElement.value = selected;
+        renderSelectedSchools();
+    });
+    schoolsElement.addEventListener("blur", () => {
+        if (!schoolsElement.value.trim()) {
+            schoolsElement.value = ORIGINAL_DATASET_SCHOOL;
+            renderSelectedSchools();
+        }
+    });
     measureElement.addEventListener("change", renderSelectedSchools);
+    renderSelectedSchools();
     loadSchools();
 }
 

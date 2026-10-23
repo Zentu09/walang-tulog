@@ -269,16 +269,23 @@
                         <h3 id="fdSchoolTitle">School-level findings</h3>
                         <p>
                             Compare sleep and GPA patterns using anonymous submissions.
-                            Select one or more schools and a sleep measure.
+                            Select a school with submissions and a sleep measure.
                         </p>
                     </div>
                     <div class="fd-school-controls">
-                        <fieldset>
-                            <legend>Schools</legend>
-                            <div id="schoolFindingsSchools" class="fd-school-list">
-                                <span class="fd-school-muted">Loading schools…</span>
-                            </div>
-                        </fieldset>
+                        <label for="schoolFindingsSchools">School
+                            <input id="schoolFindingsSchools"
+                                   list="schoolFindingsSchoolOptions"
+                                   value="St. Lawrence University (original study dataset)"
+                                   autocomplete="off"
+                                   aria-describedby="schoolFindingsHint">
+                            <datalist id="schoolFindingsSchoolOptions">
+                                <option value="St. Lawrence University (original study dataset)"></option>
+                            </datalist>
+                            <span id="schoolFindingsHint" class="fd-school-hint">
+                                Type to search schools with submissions. Leave blank to use the original study dataset.
+                            </span>
+                        </label>
                         <label for="schoolSleepMeasure">Sleep measure
                             <select id="schoolSleepMeasure">
                                 <option value="WeekdaySleep">Weekday sleep duration</option>

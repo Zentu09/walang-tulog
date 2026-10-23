@@ -1,17 +1,20 @@
 const http = require("node:http");
 const fs = require("node:fs/promises");
+const os = require("node:os");
 const path = require("node:path");
 const ExcelJS = require("exceljs");
 const supabase = require("./supabase/client");
 const APPROVED_SCHOOL_NAMES = require("./Codes/Js/approved-schools.json");
 
 const PROJECT_FOLDER = __dirname;
+const STORAGE_FOLDER = process.env.VERCEL ? os.tmpdir() : PROJECT_FOLDER;
 const WEBSITE_FOLDER = path.join(PROJECT_FOLDER, "Codes");
 const DATA_FILE = process.env.SLEEP_STUDY_EXCEL_FILE ||
-    path.join(PROJECT_FOLDER, "data", "SchoolSubmissions.xlsx");
+    path.join(STORAGE_FOLDER, "data", "SchoolSubmissions.xlsx");
 const LEGACY_CSV_FILE = process.env.SLEEP_STUDY_CSV_FILE ||
-    path.join(PROJECT_FOLDER, "data", "SchoolSubmissions.csv");
+    path.join(STORAGE_FOLDER, "data", "SchoolSubmissions.csv");
 const PORT = Number(process.env.PORT) || 3000;
+const MINIMUM_VALID_RESPONSES_PER_SCHOOL = 50;
 
 const CSV_HEADERS = [
     "SubmissionId",
@@ -293,9 +296,13 @@ async function createExcelFile() {
 
 async function initializeExcelFile() {
     if (supabase.isConfigured()) return;
+
     if (process.env.VERCEL) {
-        throw new Error("Supabase is not configured. Add SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in Vercel > Settings > Environment Variables.");
+        console.warn(
+            "Supabase is not configured; using the temporary local Excel fallback for this deployment."
+        );
     }
+
     await fs.mkdir(path.dirname(DATA_FILE), { recursive: true });
 
     try {
@@ -498,23 +505,20 @@ async function handleRequest(request, response) {
 
     if (url.pathname === "/api/schools" && request.method === "GET") {
         const rows = await readSubmissions();
-        const schools = [];
+        const schoolCounts = new Map();
 
         for (const row of rows) {
             const key = getSchoolKey(row.School);
-            let schoolAlreadyListed = false;
-
-            for (const school of schools) {
-                if (getSchoolKey(school) === key) {
-                    schoolAlreadyListed = true;
-                    break;
-                }
-            }
-
-            if (!schoolAlreadyListed) {
-                schools.push(row.School);
+            const school = schoolCounts.get(key);
+            if (school) {
+                school.count += 1;
+            } else {
+                schoolCounts.set(key, { name: row.School, count: 1 });
             }
         }
+        const schools = [...schoolCounts.values()]
+            .filter(school => school.count >= MINIMUM_VALID_RESPONSES_PER_SCHOOL)
+            .map(school => school.name);
         sendJson(response, 200, schools);
         return;
     }
