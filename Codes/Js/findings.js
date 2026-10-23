@@ -252,8 +252,6 @@ function createScatterCharts(rows) {
         $("fdZoom").hidden = false;
         $("fdChartNote").hidden = true;
 
-        const youLegend = $("fdLegendYou");
-        if (youLegend) youLegend.hidden = !Number.isFinite(me[habit.key]);
 
         const trendAt = x => regression.slope * x + regression.intercept;
         const compact = isCompact();
@@ -292,18 +290,13 @@ function createScatterCharts(rows) {
                 plugins: {
                     legend: { display: false },
                     tooltip: {
-                        filter: item => item.datasetIndex === 0 || item.dataset.label === "You",
+                        filter: item => item.datasetIndex === 0,
                         callbacks: {
                             title: () => "",
-                            label: context => context.dataset.label === "You"
-                                ? [
-                                    `You: ${formatValue(habit, context.parsed.x)}`,
-                                    `Your GPA: ${context.parsed.y.toFixed(2)}`
-                                ]
-                                : [
-                                    `${habit.label}: ${formatValue(habit, context.parsed.x)}`,
-                                    `GPA: ${context.parsed.y.toFixed(2)}`
-                                ]
+                            label: context => [
+                                `${habit.label}: ${formatValue(habit, context.parsed.x)}`,
+                                `GPA: ${context.parsed.y.toFixed(2)}`
+                            ]
                         }
                     },
                     zoom: {
@@ -344,36 +337,6 @@ function createScatterCharts(rows) {
                 }
             }
         });
-
-        // The student's own value: a dashed line, plus a dot if they entered a GPA.
-        const youX = me[habit.key];
-        if (Number.isFinite(youX)) {
-            const youColor = cssVar("--fd-you");
-
-            chart.data.datasets.push({
-                type: "line",
-                label: "Your value",
-                data: [{ x: youX, y: gpaMin }, { x: youX, y: 4 }],
-                borderColor: youColor,
-                borderWidth: 2,
-                borderDash: [6, 5],
-                pointRadius: 0,
-                fill: false
-            });
-
-            if (Number.isFinite(me.gpa)) {
-                chart.data.datasets.push({
-                    type: "scatter",
-                    label: "You",
-                    data: [{ x: youX, y: me.gpa }],
-                    backgroundColor: youColor,
-                    borderColor: "#ffffff",
-                    borderWidth: 2,
-                    pointRadius: compact ? 8 : 7,
-                    pointHoverRadius: compact ? 10 : 9
-                });
-            }
-        }
 
         applySleepStudyChartTheme(chart);
         chart.update("none");
@@ -637,169 +600,6 @@ function createScatterCharts(rows) {
         resetButton.addEventListener("click", () => {
             if (chart && typeof chart.resetZoom === "function") chart.resetZoom();
             if (zoomRange) zoomRange.value = "1";
-        });
-    }
-
-    /* ---------- Where do you fit? ---------- */
-
-    const meForm = $("fdMeForm");
-    const COMPARE = {
-        clock: ["Later", "Earlier"],
-        duration: ["Longer", "Shorter"],
-        jetlag: ["More", "Less"],
-        score: ["Higher", "Lower"]
-    };
-    let me = {};
-
-    const readField = id => {
-        const node = $(id);
-        return node ? node.value : "";
-    };
-
-    const parseTime = value => {
-        if (!value) return NaN;
-        const [hours, minutes] = value.split(":").map(Number);
-        return hours + minutes / 60;
-    };
-
-    // In the dataset, bedtimes after midnight count past 24 (1:30 AM = 25.5).
-    const toBedHours = value =>
-        Number.isFinite(value) ? (value < 15 ? value + 24 : value) : NaN;
-
-    const sleepHours = (bed, rise) =>
-        Number.isFinite(bed) && Number.isFinite(rise)
-            ? (((rise - bed) % 24) + 24) % 24
-            : NaN;
-
-    const readNumber = id => {
-        const text = readField(id).trim();
-        return text === "" ? NaN : Number(text);
-    };
-
-    function percentile(values, value) {
-        let below = 0;
-        let equal = 0;
-
-        values.forEach(item => {
-            if (item < value) below += 1;
-            else if (item === value) equal += 1;
-        });
-
-        return ((below + equal / 2) / values.length) * 100;
-    }
-
-    function median(values) {
-        const sorted = [...values].sort((a, b) => a - b);
-        const middle = Math.floor(sorted.length / 2);
-        return sorted.length % 2
-            ? sorted[middle]
-            : (sorted[middle - 1] + sorted[middle]) / 2;
-    }
-
-    function readMe() {
-        const weekdayBed = toBedHours(parseTime(readField("meWeekdayBed")));
-        const weekdayRise = parseTime(readField("meWeekdayRise"));
-        const weekendBed = toBedHours(parseTime(readField("meWeekendBed")));
-        const weekendRise = parseTime(readField("meWeekendRise"));
-        const gpa = readNumber("meGpa");
-
-        me = {
-            WeekdayBed: weekdayBed,
-            WeekdayRise: weekdayRise,
-            WeekendBed: weekendBed,
-            WeekendRise: weekendRise,
-            WeekdaySleep: sleepHours(weekdayBed, weekdayRise),
-            WeekendSleep: sleepHours(weekendBed, weekendRise),
-            SocialJetlag: Number.isFinite(weekdayRise) && Number.isFinite(weekendRise)
-                ? weekendRise - weekdayRise
-                : NaN,
-            PoorSleepQuality: readNumber("mePoorSleepQuality"),
-            gpa: gpa >= 0 && gpa <= 4 ? gpa : NaN
-        };
-    }
-
-    function renderMe() {
-        const list = $("fdMeResults");
-        if (!list) return;
-
-        list.replaceChildren();
-
-        HABITS.filter(habit => habit.kind !== "category").forEach(habit => {
-            const value = me[habit.key];
-            const values = stats[habit.key].points.map(point => point.x);
-
-            if (!Number.isFinite(value) || !values.length) return;
-
-            const pct = percentile(values, value);
-            const [up, down] = COMPARE[habit.kind];
-            const comparison = pct >= 50
-                ? `${up} than ${Math.round(pct)}% of students`
-                : `${down} than ${Math.round(100 - pct)}% of students`;
-
-            const button = el("button", "fd-me-row");
-            button.type = "button";
-            button.dataset.habit = habit.key;
-            button.append(
-                el("span", "fd-me-name", habit.label),
-                el("span", "fd-me-value", formatValue(habit, value)),
-                el("span", "fd-me-detail",
-                    `${comparison}. Typical: ${formatValue(habit, median(values))}.`)
-            );
-            button.addEventListener("click", () => {
-                select(habit.key);
-                $("fdMain").scrollIntoView({ behavior: "smooth", block: "start" });
-            });
-
-            const item = el("li");
-            item.appendChild(button);
-            list.appendChild(item);
-        });
-
-        if (Number.isFinite(me.gpa) && gpas.length) {
-            const pct = percentile(gpas, me.gpa);
-            const item = el("li");
-            const row = el("div", "fd-me-row fd-me-static");
-
-            row.append(
-                el("span", "fd-me-name", "Your GPA"),
-                el("span", "fd-me-value", me.gpa.toFixed(2)),
-                el("span", "fd-me-detail", pct >= 50
-                    ? `Higher than ${Math.round(pct)}% of students.`
-                    : `Lower than ${Math.round(100 - pct)}% of students.`)
-            );
-            item.appendChild(row);
-            list.appendChild(item);
-        }
-
-        setActiveButtons();
-    }
-
-    if (meForm) {
-        const message = $("fdMeMessage");
-
-        meForm.addEventListener("submit", event => {
-            event.preventDefault();
-            readMe();
-
-            if (!Object.values(me).some(Number.isFinite)) {
-                me = {};
-                message.textContent = "Enter at least one time or score to see where you fit.";
-                renderMe();
-                render();
-                return;
-            }
-
-            message.textContent = "Your values are marked in amber on the chart. Select a row to see its chart.";
-            renderMe();
-            render();
-        });
-
-        $("fdMeClear").addEventListener("click", () => {
-            meForm.reset();
-            me = {};
-            message.textContent = "";
-            renderMe();
-            render();
         });
     }
 
