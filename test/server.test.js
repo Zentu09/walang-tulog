@@ -284,13 +284,8 @@ test("the website is served but the private submissions file is not", async () =
     assert.equal(findingsPage.status, 200);
     const findings = await findingsPage.text();
     assert.match(findings, /id="findings"/u);
-    assert.match(findings, /id="schoolFindingsSchools"/u);
-    assert.match(findings, /list="schoolFindingsSchoolOptions"/u);
-    assert.match(findings, /id="schoolFindingsSchoolOptions"/u);
-    assert.match(findings, /St\. Lawrence University \(original study dataset\)/u);
-    assert.doesNotMatch(findings, /type="checkbox"/u);
-    assert.match(findings, /id="schoolSleepMeasure"/u);
-    assert.match(findings, /id="schoolScatterChart"/u);
+    assert.match(findings, /id="scatterChart"/u);
+    assert.doesNotMatch(findings, /schoolScatterChart|schoolFindingsSchools/u);
 
     const comparisonPage = await fetch(`${baseUrl}/Codes/Template/comparison.html`);
     assert.equal(comparisonPage.status, 200);
