@@ -1,0 +1,144 @@
+body {
+    margin: 0;
+}
+
+
+.ulo {
+    display: flex;
+    color: #fff;
+    align-items: center;
+    background-color: #071D5E;
+    font-size: 22px;
+    height: 80px;
+}
+
+.ulo a {
+    color: #fff;
+    text-decoration: none;    
+}
+
+nav ul {
+    color: #fff;
+  display: flex;
+  list-style: none; /* Removes bullet points */
+  margin: 0;
+  padding: 0;
+  gap: 25px; /* Creates spacing between each link item */
+  
+}
+
+/* Float Left Effect: Pushes Navigation to the left, right next to the logo */
+nav {
+    margin-left: auto;
+    margin-right: 30px;
+}
+
+.logo img {    
+    height: 70px;
+    width: auto;
+    margin-left: 20px;
+}
+
+.explore {
+    display: flex;
+    height: 600px;
+    width: auto;
+    background-image: url("../css/bg.jpg");
+    background-size: cover;
+    background-position: center;
+}
+
+/* ---- Data section (CSV → chart) ---- */
+
+.data-section {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 60px 20px;
+}
+
+.data-section h2 {
+    color: #071D5E;
+    margin-bottom: 6px;
+}
+
+.data-intro {
+    color: #555;
+    margin-top: 0;
+    margin-bottom: 28px;
+}
+
+.upload-zone {
+    border: 1.5px dashed #071D5E;
+    border-radius: 8px;
+    padding: 30px 20px;
+    text-align: center;
+}
+
+.upload-zone.drag {
+    background-color: #eef1fa;
+}
+
+.upload-zone input[type="file"] {
+    display: none;
+}
+
+.upload-label {
+    display: inline-block;
+    cursor: pointer;
+    background-color: #071D5E;
+    color: #fff;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 6px;
+}
+
+.upload-hint {
+    color: #777;
+    font-size: 14px;
+    margin-top: 12px;
+}
+
+.file-name {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #071D5E;
+}
+
+.error-msg {
+    color: #b3453b;
+    font-size: 14px;
+    margin-top: 12px;
+    display: none;
+}
+
+.controls {
+    display: none;
+    gap: 16px;
+    margin: 24px 0 8px;
+    flex-wrap: wrap;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 13px;
+    color: #555;
+}
+
+.field select {
+    font-size: 14px;
+    padding: 6px 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    min-width: 160px;
+}
+
+.chart-wrap {
+    display: none;
+    margin-top: 24px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 20px;
+    overflow-x: auto;
+}
