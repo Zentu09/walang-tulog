@@ -127,11 +127,14 @@ test("saved sleep durations use the values derived by the server", () => {
 });
 
 test("the website is served but the private submissions file is not", async () => {
-    const pageResponse = await fetch(`${baseUrl}/Codes/Template/study.html`);
+    const pageResponse = await fetch(`${baseUrl}/Codes/Template/submission.html`);
     assert.equal(pageResponse.status, 200);
     const page = await pageResponse.text();
     assert.match(page, /schoolSubmissionForm/u);
-    assert.match(page, /schoolFilter/u);
+
+    const findingsPage = await fetch(`${baseUrl}/Codes/Template/study.html`);
+    assert.equal(findingsPage.status, 200);
+    assert.match(await findingsPage.text(), /id="findings"/u);
 
     const dataResponse = await fetch(`${baseUrl}/data/responses.csv`);
     assert.equal(dataResponse.status, 404);

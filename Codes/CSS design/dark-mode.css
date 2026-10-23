@@ -22,6 +22,7 @@ html[data-theme="dark"] .hab2,
 html[data-theme="dark"] #performance > .t,
 html[data-theme="dark"] .findings-title h2,
 html[data-theme="dark"] .comparison-heading h1,
+html[data-theme="dark"] .submission-heading h1,
 html[data-theme="dark"] .results-heading h2 {
     color: #e3edff;
 }
@@ -31,6 +32,8 @@ html[data-theme="dark"] .card4 .t3,
 html[data-theme="dark"] .card5 .t3,
 html[data-theme="dark"] .findings-title p,
 html[data-theme="dark"] .comparison-heading p,
+html[data-theme="dark"] .submission-heading p,
+html[data-theme="dark"] .submission-note,
 html[data-theme="dark"] .results-heading p,
 html[data-theme="dark"] .privacy-note {
     color: #b3c4e2;
@@ -44,6 +47,7 @@ html[data-theme="dark"] .findings-chart-card,
 html[data-theme="dark"] .correlation-card,
 html[data-theme="dark"] .meaning-card,
 html[data-theme="dark"] .comparison-form,
+html[data-theme="dark"] .submission-form,
 html[data-theme="dark"] .metric-result,
 html[data-theme="dark"] .gpa-bucket-result {
     border-color: #2a3d60;
@@ -190,15 +194,35 @@ html[data-theme="dark"] .habit-selector {
 }
 
 html[data-theme="dark"] .habit-selector label,
-html[data-theme="dark"] .comparison-fields label {
+html[data-theme="dark"] .comparison-fields label,
+html[data-theme="dark"] .submission-fields label,
+html[data-theme="dark"] .submission-consent {
     color: #d2def2;
 }
 
 html[data-theme="dark"] .habit-selector select,
-html[data-theme="dark"] .comparison-fields input {
+html[data-theme="dark"] .comparison-fields input,
+html[data-theme="dark"] .submission-fields input,
+html[data-theme="dark"] .submission-fields select {
     border-color: #405777;
     background: #101c31;
     color: #e3edff;
+}
+
+html[data-theme="dark"] .submission-fields label span {
+    color: #b3c4e2;
+}
+
+html[data-theme="dark"] .submission-message {
+    color: #d2def2;
+}
+
+html[data-theme="dark"] .submission-message[data-state="error"] {
+    color: #ffaaa5;
+}
+
+html[data-theme="dark"] .submission-message[data-state="success"] {
+    color: #93d6ad;
 }
 
 html[data-theme="dark"] .optional-gpa > span,
@@ -248,6 +272,15 @@ html[data-theme="dark"] .comparison-submit {
 
 html[data-theme="dark"] .comparison-submit:hover,
 html[data-theme="dark"] .comparison-submit:focus-visible {
+    background: #4f91e8;
+}
+
+html[data-theme="dark"] .submission-submit {
+    background: #2874df;
+}
+
+html[data-theme="dark"] .submission-submit:hover,
+html[data-theme="dark"] .submission-submit:focus-visible {
     background: #4f91e8;
 }
 

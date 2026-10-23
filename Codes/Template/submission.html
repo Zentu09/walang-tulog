@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Submit Study Data | Sleep Study</title>
+        <link rel="icon" type="image/x-icon" href="../CSS design/sleep_icon.ico">
+
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="../CSS design/UI.css">
+        <link rel="stylesheet" href="../CSS design/submission.css">
+        <link rel="stylesheet" href="../css/all.min.css">
+        <link rel="stylesheet" href="../CSS design/dark-mode.css">
+    </head>
+    <body>
+        <section class="header-section">
+            <div class="ulo">
+                <div class="logo">
+                    <a href="index.html#home" aria-label="Sleep Study home">
+                        <img src="../CSS design/Media3.png" alt="SleepStudy logo">
+                    </a>
+                </div>
+
+                <button class="nav-toggle" type="button" aria-controls="primary-navigation"
+                    aria-expanded="false" aria-label="Open navigation">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+
+                <nav id="primary-navigation" aria-label="Main navigation">
+                    <ul>
+                        <li><a href="index.html#home">Home</a></li>
+                        <li><a href="study.html#about-study">About Study</a></li>
+                        <li><a href="study.html#sleep-habits">Sleep Habits</a></li>
+                        <li><a href="study.html#performance">Performance</a></li>
+                        <li><a href="submission.html" aria-current="page">Submit Data</a></li>
+                        <li><a href="study.html#findings">Findings</a></li>
+                        <li><a href="comparison.html">Compare Sleep</a></li>
+                        <li><a href="study.html#about">About Us</a></li>
+                    </ul>
+                </nav>
+
+                <button class="theme-toggle" type="button" aria-label="Switch to dark mode">
+                    <i class="fa-solid fa-sun" aria-hidden="true"></i>
+                    <span>Morning Lark</span>
+                </button>
+            </div>
+        </section>
+
+        <main>
+            <section id="submit-response" class="submission-page">
+                <div class="submission-heading">
+                    <span class="submission-eyebrow">CONTRIBUTE TO THE STUDY</span>
+                    <h1>Share Your Sleep and School Information</h1>
+                    <p>Your anonymous response will be added to your school's study records.</p>
+                </div>
+
+                <form id="schoolSubmissionForm" class="submission-form">
+                    <div class="submission-fields">
+                        <label for="schoolName">School name
+                            <input id="schoolName" name="school" type="text" maxlength="120"
+                                list="schoolSuggestions" autocomplete="organization" required>
+                        </label>
+                        <datalist id="schoolSuggestions"></datalist>
+
+                        <label for="studentGpa">Current Philippine GPA
+                            <span>(1.00–5.00; 1.00 is highest)</span>
+                            <input id="studentGpa" name="PhilippineGpa" type="number"
+                                min="1" max="5" step="0.01" inputmode="decimal" required>
+                        </label>
+
+                        <label for="weekdayBed">Weekday bedtime
+                            <input id="weekdayBed" name="WeekdayBed" type="time" required>
+                        </label>
+                        <label for="weekdayRise">Weekday rise time
+                            <input id="weekdayRise" name="WeekdayRise" type="time" required>
+                        </label>
+
+                        <label for="weekendBed">Weekend bedtime
+                            <input id="weekendBed" name="WeekendBed" type="time" required>
+                        </label>
+                        <label for="weekendRise">Weekend rise time
+                            <input id="weekendRise" name="WeekendRise" type="time" required>
+                        </label>
+
+                        <label for="sleepQuality">Poor sleep quality score
+                            <span>(enter the whole-number score from your questionnaire)</span>
+                            <input id="sleepQuality" name="PoorSleepQuality" type="number"
+                                min="0" step="1" inputmode="numeric" required>
+                        </label>
+
+                        <label for="chronotype">Chronotype
+                            <select id="chronotype" name="LarkOwl" required>
+                                <option value="">Select one</option>
+                                <option value="Lark">Lark</option>
+                                <option value="Owl">Owl</option>
+                                <option value="Neither">Neither</option>
+                            </select>
+                        </label>
+                    </div>
+
+                    <p class="submission-note">
+                        Sleep durations are calculated from the times you enter. Bedtimes
+                        before noon are saved in the same format as the study dataset.
+                    </p>
+
+                    <label class="submission-consent">
+                        <input name="consent" type="checkbox" required>
+                        I agree that this anonymous response may be used for the sleep study.
+                    </label>
+
+                    <p id="submissionMessage" class="submission-message" role="status"
+                        aria-live="polite"></p>
+                    <button class="submission-submit" type="submit">Submit response</button>
+                </form>
+            </section>
+        </main>
+
+        <script src="../Js/schoolSubmission.js"></script>
+        <script src="../Js/mobile-navigation.js"></script>
+        <script src="../Js/theme-toggle.js"></script>
+    </body>
+</html>
