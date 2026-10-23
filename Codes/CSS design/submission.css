@@ -1,0 +1,152 @@
+.submission-page {
+    box-sizing: border-box;
+    padding: 80px 4%;
+    color: #173765;
+}
+
+.submission-heading,
+.submission-form {
+    max-width: 900px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.submission-heading {
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.submission-eyebrow {
+    color: #477bc3;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+}
+
+.submission-heading h2 {
+    margin: 8px 0;
+    color: #12346b;
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+}
+
+.submission-heading p,
+.submission-fields label span {
+    color: #6382ab;
+}
+
+.submission-form {
+    padding: 28px;
+    border: 1px solid #c9defa;
+    border-radius: 16px;
+    background: rgb(255 255 255 / 94%);
+    box-shadow: 0 10px 30px rgb(46 105 180 / 8%);
+}
+
+.submission-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 18px;
+}
+
+.submission-fields label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    color: #214878;
+    font-size: 0.92rem;
+    font-weight: 700;
+}
+
+.submission-fields label span {
+    display: block;
+    font-weight: 500;
+}
+
+.submission-fields input,
+.submission-fields select {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 46px;
+    padding: 10px 12px;
+    border: 1px solid #c6daf4;
+    border-radius: 10px;
+    background: #fff;
+    color: #183765;
+    font: inherit;
+}
+
+.submission-fields input:focus,
+.submission-fields select:focus {
+    outline: 3px solid rgb(40 116 223 / 22%);
+    border-color: #2874df;
+}
+
+#schoolSuggestions {
+    display: none;
+}
+
+.submission-note {
+    margin: 22px 0 12px;
+    color: #5f7da6;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.submission-consent {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    color: #214878;
+    line-height: 1.5;
+}
+
+.submission-consent input {
+    margin-top: 4px;
+}
+
+.submission-message {
+    min-height: 1.4em;
+    margin: 16px 0 10px;
+    color: #214878;
+    font-weight: 700;
+}
+
+.submission-message[data-state="error"] {
+    color: #a32727;
+}
+
+.submission-message[data-state="success"] {
+    color: #17633b;
+}
+
+.submission-submit {
+    min-height: 48px;
+    padding: 12px 22px;
+    border: 0;
+    border-radius: 24px;
+    background: #071d5e;
+    color: #fff;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 700;
+}
+
+.submission-submit:hover,
+.submission-submit:focus-visible {
+    background: #174da0;
+}
+
+.submission-submit:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+
+@media (max-width: 640px) {
+    .submission-fields {
+        grid-template-columns: 1fr;
+    }
+
+    .submission-form {
+        padding: 20px;
+    }
+}
