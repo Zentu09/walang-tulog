@@ -499,25 +499,42 @@ body.intro-locked {
 
     .ulo {
         min-height: 72px;
-        flex-direction: row;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto auto;
         align-items: center;
-        padding: 8px var(--page-gutter);
+        gap: 10px;
+        padding: 8px 16px;
     }
 
     .logo img {
-        width: 136px;
+        width: clamp(108px, 34vw, 140px);
     }
 
     .nav-toggle {
-        display: block;
-        margin-left: 10px;
+        display: grid;
+        width: 42px;
+        height: 42px;
+        place-content: center;
+        margin: 0;
+        padding: 9px;
+        border-color: rgb(255 255 255 / 28%);
+        border-radius: 14px;
+        background: rgb(255 255 255 / 6%);
     }
 
     .theme-toggle {
-        min-height: 40px;
-        margin-left: auto;
-        padding: 7px 10px;
-        font-size: 0.8rem;
+        width: 42px;
+        min-height: 42px;
+        margin: 0;
+        padding: 0;
+        border-color: rgb(255 255 255 / 28%);
+        border-radius: 14px;
+        background: rgb(255 255 255 / 6%);
+        font-size: 1rem;
+    }
+
+    .theme-toggle span {
+        display: none;
     }
 
     .ulo.nav-open .nav-toggle span:first-child {
@@ -535,18 +552,18 @@ body.intro-locked {
     .ulo nav {
         position: absolute;
         top: calc(100% + 8px);
-        right: 18px;
-        left: auto;
-        width: min(260px, calc(100vw - 64px));
+        left: 50%;
+        width: calc(100vw - 24px);
         max-height: calc(100vh - 88px);
         overflow-y: auto;
         margin-left: 0;
-        padding: 10px 12px 14px;
-        border: 1px solid rgb(255 255 255 / 18%);
-        border-radius: 8px;
-        background: #071D5E;
-        box-shadow: 0 12px 18px rgb(7 29 94 / 20%);
+        padding: 10px;
+        border: 1px solid rgb(255 255 255 / 14%);
+        border-radius: 18px;
+        background: #0b245f;
+        box-shadow: 0 18px 40px rgb(0 0 0 / 28%);
         display: none;
+        transform: translateX(-50%);
     }
 
     .ulo.nav-open nav {
@@ -561,22 +578,37 @@ body.intro-locked {
 
     .ulo nav a {
         display: block;
-        padding: 11px 8px;
+        padding: 12px;
+        border-radius: 10px;
         font-size: 16px;
     }
 
     .nav-dropdown-toggle {
         display: block;
         width: 100%;
-        padding: 11px 8px;
+        padding: 12px;
+        border-radius: 10px;
         font-size: 16px;
         text-align: left;
+    }
+
+    .ulo nav a::after,
+    .nav-dropdown-toggle::after {
+        display: none;
+    }
+
+    .ulo nav a:hover,
+    .ulo nav a:focus-visible,
+    .nav-dropdown-toggle:hover,
+    .nav-dropdown-toggle:focus-visible,
+    .nav-dropdown-toggle[aria-expanded="true"] {
+        background: rgb(255 255 255 / 10%);
     }
 
     .ulo nav .nav-submenu {
         position: static;
         min-width: 0;
-        padding: 0 0 4px 14px;
+        padding: 4px 0 8px 12px;
         border: 0;
         border-radius: 0;
         background: transparent;
@@ -584,7 +616,7 @@ body.intro-locked {
     }
 
     .ulo nav .nav-submenu a {
-        padding: 8px;
+        padding: 10px 12px;
         font-size: 15px;
     }
 
@@ -673,19 +705,12 @@ body.intro-locked {
 
 @media (max-width: 380px) {
     .logo img {
-        width: 100px;
+        width: 108px;
     }
 
     .nav-toggle {
         width: 40px;
-        flex: 0 0 40px;
-        margin-left: 6px;
-    }
-
-    .theme-toggle {
-        gap: 5px;
-        padding: 6px 7px;
-        font-size: 0.72rem;
+        height: 40px;
     }
 
     .explore {
