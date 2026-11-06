@@ -52,9 +52,10 @@
   }
   function msg(cls, text) { return '<p class="reco-msg ' + cls + '">' + text + '</p>'; }
 
-  // Personalized "Why sleep matters for focus" lines. Wording follows the CDC / NIH (NHLBI)
-  // sources cited in the panel: enough sleep supports attention. We do not claim that
-  // sleeping beyond the recommended range improves focus.
+  // Personalized lines for the "Why sleep matters for focus" section. Wording follows the
+  // CDC / NIH (NHLBI) sources cited in the panel: enough sleep supports attention. We do not
+  // claim that sleeping beyond the recommended range improves focus. Sleep that is within the
+  // recommended range gets no personalized message.
   function focusItem(cls, title, text) {
     return '<div class="reco-focus-item ' + cls + '"><strong>' + title + '</strong><span>' + text + '</span></div>';
   }
@@ -69,9 +70,7 @@
         label + ': more sleep is unlikely to sharpen focus',
         'You sleep about ' + hm(m) + ', above the ' + r.text + ' recommended for your age group. The research we cite links attention to getting enough sleep, not extra sleep, so sleep quality may matter more here.');
     }
-    return focusItem('is-within',
-      label + ': your sleep supports attention',
-      'You sleep about ' + hm(m) + ', within the ' + r.text + ' recommended for your age group. Keep it up to help you stay focused.');
+    return '';
   }
   function renderFocus(wd, we, sw, se, jl, r) {
     if (!focusBox) return;
