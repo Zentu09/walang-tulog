@@ -9,6 +9,7 @@
   --reco-hl: #e3ecff;
   --reco-good-bg: #e6f6ec; --reco-good: #14653a;
   --reco-tip-bg: #fff4dc;  --reco-tip: #6b4a00;
+  --reco-focus-bg: #eef2ff; --reco-focus: #1b2a52;
 }
 :root[data-theme="dark"], body.dark-mode, body.dark {
   --reco-surface: #16203d;
@@ -18,6 +19,7 @@
   --reco-hl: #26396b;
   --reco-good-bg: #12362a; --reco-good: #9fe3bd;
   --reco-tip-bg: #3a2f12;  --reco-tip: #ffe0a0;
+  --reco-focus-bg: #1d2b55; --reco-focus: #dbe6ff;
 }
 
 .age-group-field select { width: 100%; font: inherit; }
@@ -104,12 +106,37 @@
 .reco-source { margin: 10px 0 0; font-size: .85rem; color: var(--reco-muted); line-height: 1.5; }
 .reco-source a { color: var(--reco-blue); }
 
+/* Why sleep matters for focus (static list) */
+.reco-focus-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  font-size: .95rem;
+  line-height: 1.55;
+}
+.reco-focus-list li { margin-bottom: 6px; }
+.reco-focus-list strong { color: var(--reco-blue); }
+
 .reco-stat { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; padding: 9px 0; border-bottom: 1px solid var(--reco-line); font-size: .95rem; }
 .reco-stat strong { font-weight: 700; }
 .reco-msg { margin: 12px 0 0; padding: 12px 14px; border-radius: 12px; line-height: 1.5; font-size: .95rem; }
 .reco-msg.good { background: var(--reco-good-bg); color: var(--reco-good); font-weight: 600; }
 .reco-msg.tip  { background: var(--reco-hl); }
 .reco-msg.warn { background: var(--reco-tip-bg); color: var(--reco-tip); }
+.reco-msg.focus {
+  background: var(--reco-focus-bg);
+  color: var(--reco-focus);
+  border-left: 4px solid var(--reco-blue);
+}
+.reco-msg.focus::before {
+  content: "Focus";
+  display: block;
+  margin-bottom: 4px;
+  font-size: .75rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--reco-blue);
+}
 .reco-note { margin: 18px 0 0; color: var(--reco-muted); font-size: .85rem; }
 
 @media (prefers-reduced-motion: reduce) {
