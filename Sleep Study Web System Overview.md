@@ -173,17 +173,12 @@ This conclusion is designed to promote balanced analysis rather than oversimplif
 
 ### School-level data sufficiency
 
-`Codes/Js/research-config.js` contains the shared setting
-`MINIMUM_VALID_RESPONSES_PER_SCHOOL`. It is currently `null` because the project
-team has not confirmed a threshold from its research methodology. While unset,
-the page reports valid paired-response counts but does not display a school-level
-chart. Once the project leader confirms the minimum, set this value to that
-positive whole-number threshold. Findings and Compare Sleep both use this
-setting; school-specific comparisons remain unavailable until the threshold is
-approved. At least three valid pairs with variation in
-both GPA and the selected sleep measure are also required for a meaningful
-correlation. If any selected school fails the checks, the chart is withheld and
-the page explains why. Missing, non-numeric, and out-of-range values are excluded.
+The API displays a school in Findings after it has at least 50 submissions.
+Supabase submissions are fetched in ordered pages, so its per-school count
+includes rows beyond the API's per-request row limit. Once selected, the chart
+uses only rows with valid GPA and a valid value for the selected sleep measure.
+At least three usable pairs with variation in both measures are required to
+calculate a correlation. Missing or non-numeric values are excluded.
 
 The submission form asks students to enter the complete official school name
 (including campus where relevant) and select it from the supplied approved
@@ -204,10 +199,8 @@ not verify an individual student's enrollment.
 ### Run and verify
 
 From the project root, run `npm start` and open `http://127.0.0.1:3000`.
-Submit a response on the Submit Data page, then select one or more schools under
-Findings. The school chart stays hidden until the research team sets the
-approved `MINIMUM_VALID_RESPONSES_PER_SCHOOL` value in
-`Codes/Js/research-config.js`. Run `npm test` to verify submission validation,
+Submit a response on the Submit Data page, then select a school with at least 50
+submissions under Findings. Run `npm test` to verify submission validation,
 school-list lookup, school-name normalization, Excel append behavior,
 duplicate retry handling, and privacy of the submission workbook. Keep
 `Codes/Js/approved-schools.json` in the deployment; regenerate it from

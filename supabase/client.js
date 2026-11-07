@@ -2,6 +2,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const TABLE = "submissions";
+const READ_PAGE_SIZE = 1000;
 
 // Load ../.env (if present) so you don't need any extra packages or Node flags.
 try {
@@ -15,7 +16,7 @@ function isConfigured() {
     return Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
 }
 
-async function request(method, query, body, extraHeaders = {}) {
+async function request(method, query, body, extraHeaders = {}, includeHeaders = false) {
     const url = `${process.env.SUPABASE_URL.replace(/\/$/, "")}/rest/v1/${TABLE}${query}`;
     const response = await fetch(url, {
         method,
@@ -31,7 +32,8 @@ async function request(method, query, body, extraHeaders = {}) {
         throw new Error(`Supabase ${method} failed (${response.status}): ${await response.text()}`);
     }
     const text = await response.text();
-    return text ? JSON.parse(text) : null;
+    const data = text ? JSON.parse(text) : null;
+    return includeHeaders ? { data, headers: response.headers } : data;
 }
 
 // Convert between the app's PascalCase fields and the table's snake_case columns.
@@ -45,7 +47,54 @@ const toRow = s => Object.fromEntries(MAP.map(([a, b]) => [b, s[a]]));
 const fromRow = r => Object.fromEntries(MAP.map(([a, b]) => [a, r[b]]));
 
 async function readSubmissions() {
-    const rows = await request("GET", "?select=*&order=created_at.asc&limit=100000");
+    const rows = [];
+    let offset = 0;
+    let total = Infinity;
+
+    while (offset < total) {
+        const { data, headers } = await request(
+            "GET",
+            "?select=*&order=created_at.asc,submission_id.asc",
+            undefined,
+            {
+                Prefer: "count=exact",
+                Range: `${offset}-${offset + READ_PAGE_SIZE - 1}`,
+                "Range-Unit": "items"
+            },
+            true
+        );
+
+        if (!Array.isArray(data)) {
+            throw new Error("Supabase submissions response is not an array.");
+        }
+
+        const contentRange = headers.get("content-range") || "";
+        const rangeMatch = contentRange.match(/^(?:(\d+)-(\d+)|\*)\/(\d+|\*)$/u);
+        if (!rangeMatch || rangeMatch[3] === "*") {
+            throw new Error("Supabase did not return an exact submissions count.");
+        }
+
+        total = Number(rangeMatch[3]);
+        if (!Number.isSafeInteger(total)) {
+            throw new Error("Supabase returned an invalid submissions count.");
+        }
+        if (data.length === 0) {
+            if (offset < total) {
+                throw new Error("Supabase returned an empty page before all submissions were read.");
+            }
+            break;
+        }
+
+        const pageStart = Number(rangeMatch[1]);
+        const pageEnd = Number(rangeMatch[2]);
+        if (pageStart !== offset || pageEnd - pageStart + 1 !== data.length) {
+            throw new Error("Supabase returned an incomplete submissions page.");
+        }
+
+        rows.push(...data);
+        offset += data.length;
+    }
+
     return rows.map(fromRow);
 }
 
