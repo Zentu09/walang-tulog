@@ -7,6 +7,7 @@
   var overlay = document.getElementById('recoOverlay');
   var panel = document.getElementById('recoPanel');
   var body = document.getElementById('recoBody');
+  var focusBox = document.getElementById('recoFocusPersonal');
   var closeBtn = document.getElementById('recoClose');
   var rows = document.querySelectorAll('#recoTable tbody tr');
   if (!form || !results || !fab || !overlay || !panel) return;
@@ -51,6 +52,40 @@
   }
   function msg(cls, text) { return '<p class="reco-msg ' + cls + '">' + text + '</p>'; }
 
+  // Personalized lines for the "Why sleep matters for focus" section. Wording follows the
+  // CDC / NIH (NHLBI) sources cited in the panel: enough sleep supports attention. We do not
+  // claim that sleeping beyond the recommended range improves focus. Sleep that is within the
+  // recommended range gets no personalized message.
+  function focusItem(cls, title, text) {
+    return '<div class="reco-focus-item ' + cls + '"><strong>' + title + '</strong><span>' + text + '</span></div>';
+  }
+  function focusForDay(label, m, st, r) {
+    if (st === 'below') {
+      return focusItem('is-below',
+        label + ': you may need more sleep for attention',
+        'You sleep about ' + hm(m) + ', which is ' + hm(r.min * 60 - m) + ' under the minimum of the ' + r.text + ' recommended for your age group.');
+    }
+    if (st === 'above') {
+      return focusItem('is-above',
+        label + ': more sleep is unlikely to sharpen focus',
+        'You sleep about ' + hm(m) + ', above the ' + r.text + ' recommended for your age group. The research we cite links attention to getting enough sleep, not extra sleep, so sleep quality may matter more here.');
+    }
+    return '';
+  }
+  function renderFocus(wd, we, sw, se, jl, r) {
+    if (!focusBox) return;
+    var html = focusForDay('Weekdays', wd, sw, r) + focusForDay('Weekends', we, se, r);
+    if (jl >= JETLAG_LIMIT) {
+      html += focusItem('',
+        'Schedule: a steadier wake-up time may help',
+        'Your weekend wake time is ' + hm(jl) + ' different from your weekday one. A shifting schedule can leave you groggy early in the week, which may make it harder to concentrate.');
+    }
+    if (sw === 'below' || se === 'below') {
+      html += '<p class="reco-focus-summary">The CDC and NIH note that sleep helps you pay attention, so moving toward the recommended range may help you concentrate and remember what you study.</p>';
+    }
+    focusBox.innerHTML = html;
+  }
+
   function render() {
     var f = form.elements;
     var key = f.ageGroup.value, r = RANGES[key];
@@ -86,6 +121,7 @@
       }
     }
     body.innerHTML = html;
+    renderFocus(wd, we, sw, se, jl, r);
     return true;
   }
 
