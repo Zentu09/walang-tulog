@@ -21,7 +21,7 @@ function calculateRegression(points) {
         minX: NaN, maxX: NaN, n
     };
 
-    if (n < 3) return empty;
+    if (n < 3) return { ...empty, reason: "too-few-pairs" };
 
     let sumX = 0;
     let sumY = 0;
@@ -48,7 +48,12 @@ function calculateRegression(points) {
     }
 
     // No spread in x or y means a correlation can't be calculated.
-    if (!(varianceX > 0) || !(varianceY > 0)) return empty;
+    if (!(varianceX > 0) || !(varianceY > 0)) {
+        return {
+            ...empty,
+            reason: !(varianceX > 0) ? "no-habit-variation" : "no-gpa-variation"
+        };
+    }
 
     const slope = numerator / varianceX;
 
@@ -245,28 +250,65 @@ function createScatterCharts(rows) {
 
         destroyChart();
 
-        if (!Number.isFinite(regression.correlation)) {
-            setStatus("Not enough data to chart this habit.");
+        const hasCorrelation = Number.isFinite(regression.correlation);
+        const trendDataset = hasCorrelation
+            ? [{
+                type: "line",
+                label: "Trend line",
+                data: [
+                    {
+                        x: regression.minX,
+                        y: regression.slope * regression.minX + regression.intercept
+                    },
+                    {
+                        x: regression.maxX,
+                        y: regression.slope * regression.maxX + regression.intercept
+                    }
+                ],
+                borderColor: cssVar("--fd-trend"),
+                borderWidth: 2.5,
+                pointRadius: 0,
+                fill: false
+            }]
+            : [];
+
+        if (!points.length) {
+            setStatus(
+                `No valid GPA and ${habit.label.toLowerCase()} pairs were found in ` +
+                `${currentRows.length} submissions.`
+            );
+            $("fdLegend").hidden = true;
+            $("fdZoom").hidden = true;
+            $("fdChartNote").hidden = true;
             setResult({
                 title,
                 label: "Pearson's r",
                 value: "N/A",
-                strength: "Not enough data",
-                description: "There aren't enough valid responses to calculate a correlation.",
-                meaning: "Try another habit.",
+                strength: "No valid pairs",
+                description:
+                    `0 of ${currentRows.length} submissions have valid GPA and ` +
+                    `${habit.label.toLowerCase()} values.`,
+                meaning: "Check that the selected school's submissions include these values.",
                 badge: "No result",
                 gauge: NaN
             });
             return;
         }
 
-        setStatus("");
+        const reason = regression.reason === "too-few-pairs"
+            ? "At least 3 valid pairs are needed to calculate a correlation."
+            : regression.reason === "no-habit-variation"
+                ? `The ${habit.label.toLowerCase()} values do not vary, so a correlation cannot be calculated.`
+                : regression.reason === "no-gpa-variation"
+                    ? "The GPA values do not vary, so a correlation cannot be calculated."
+                    : "";
+        setStatus(hasCorrelation
+            ? ""
+            : `Showing ${points.length} valid pairs. ${reason}`);
         $("fdLegend").hidden = false;
         $("fdZoom").hidden = false;
         $("fdChartNote").hidden = true;
 
-
-        const trendAt = x => regression.slope * x + regression.intercept;
         const compact = isCompact();
 
         chart = new Chart(canvas, {
@@ -282,18 +324,7 @@ function createScatterCharts(rows) {
                         pointRadius: compact ? 4 : 3.5,
                         pointHoverRadius: compact ? 6 : 5
                     },
-                    {
-                        type: "line",
-                        label: "Trend line",
-                        data: [
-                            { x: regression.minX, y: trendAt(regression.minX) },
-                            { x: regression.maxX, y: trendAt(regression.maxX) }
-                        ],
-                        borderColor: cssVar("--fd-trend"),
-                        borderWidth: 2.5,
-                        pointRadius: 0,
-                        fill: false
-                    }
+                    ...trendDataset
                 ]
             },
             options: {
@@ -354,6 +385,22 @@ function createScatterCharts(rows) {
         applySleepStudyChartTheme(chart);
         chart.update("none");
 
+        if (!hasCorrelation) {
+            $("fdLegend").querySelector(".fd-line").parentElement.hidden = true;
+            setResult({
+                title,
+                label: "Pearson's r",
+                value: "N/A",
+                strength: "Correlation unavailable",
+                description: `Showing ${points.length} valid pairs from ${currentRows.length} submissions, but ${reason.toLowerCase()}`,
+                meaning: "The plotted points are available, but this dataset cannot show a correlation for this habit.",
+                badge: "No correlation",
+                gauge: NaN
+            });
+            return;
+        }
+
+        $("fdLegend").querySelector(".fd-line").parentElement.hidden = false;
         const r = regression.correlation;
         const strength = getCorrelationStrength(r);
         const direction = r < 0 ? "negative" : "positive";
