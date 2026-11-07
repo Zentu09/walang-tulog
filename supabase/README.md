@@ -1,5 +1,11 @@
 # Supabase setup
 
+The submission form reads the generated static list at
+`Codes/Js/approved-schools.json`; school-name searching does not require an API
+request. The API also checks submissions against that list. To regenerate it
+after replacing `Codes/Js/school_masterlist.csv`, run `npm run extract-schools`,
+commit the updated JSON, and redeploy.
+
 1. **Create the table:** Supabase Dashboard > SQL Editor > paste `supabase/schema.sql` > Run.
 2. **Add your keys:** copy `supabase/.env.example` to the project root as `.env`, then fill in
    `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` (Project Settings > API). `.env` is git-ignored.

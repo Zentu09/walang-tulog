@@ -91,7 +91,7 @@ test("the server validates required fields and consent", () => {
     );
 });
 
-test("the approved-school search verifies PDF names and the original study school", async () => {
+test("the approved-school search verifies CSV names and the original study school", async () => {
     const pdfSchoolResponse = await fetch(
         `${baseUrl}/api/approved-schools?search=${encodeURIComponent("bacarra   ces")}`
     );
@@ -121,6 +121,49 @@ test("the submission endpoint rejects schools outside the approved list", async 
     assert.match((await response.json()).error, /approved masterlist/u);
 });
 
+test("Vercel uses a writable temporary Excel fallback without Supabase config", async () => {
+    const previousVercel = process.env.VERCEL;
+    const previousUrl = process.env.SUPABASE_URL;
+    const previousKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const previousExcelFile = process.env.SLEEP_STUDY_EXCEL_FILE;
+    const previousCsvFile = process.env.SLEEP_STUDY_CSV_FILE;
+
+    try {
+        delete process.env.SUPABASE_URL;
+        delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+        process.env.VERCEL = "1";
+
+        const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "sleep-study-vercel-"));
+        const excelFile = path.join(tempDir, "SchoolSubmissions.xlsx");
+        const csvFile = path.join(tempDir, "SchoolSubmissions.csv");
+        process.env.SLEEP_STUDY_EXCEL_FILE = excelFile;
+        process.env.SLEEP_STUDY_CSV_FILE = csvFile;
+
+        delete require.cache[require.resolve("../server")];
+        const { prepare } = require("../server");
+        await prepare();
+
+        assert.ok(fs.existsSync(excelFile));
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.readFile(excelFile);
+        assert.equal(workbook.getWorksheet("Submissions").rowCount, 1);
+    } finally {
+        if (previousVercel === undefined) delete process.env.VERCEL;
+        else process.env.VERCEL = previousVercel;
+        if (previousUrl === undefined) delete process.env.SUPABASE_URL;
+        else process.env.SUPABASE_URL = previousUrl;
+        if (previousKey === undefined) delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+        else process.env.SUPABASE_SERVICE_ROLE_KEY = previousKey;
+        if (previousExcelFile === undefined) delete process.env.SLEEP_STUDY_EXCEL_FILE;
+        else process.env.SLEEP_STUDY_EXCEL_FILE = previousExcelFile;
+        if (previousCsvFile === undefined) delete process.env.SLEEP_STUDY_CSV_FILE;
+        else process.env.SLEEP_STUDY_CSV_FILE = previousCsvFile;
+        delete require.cache[require.resolve("../server")];
+        const { startServer } = require("../server");
+        assert.equal(typeof startServer, "function");
+    }
+});
+
 test("responses append, reuse school spelling, and ignore retry duplicates", async () => {
     const firstResponse = await fetch(`${baseUrl}/api/submissions`, {
         method: "POST",
@@ -148,15 +191,26 @@ test("responses append, reuse school spelling, and ignore retry duplicates", asy
     assert.equal(secondResponse.status, 201);
     assert.equal((await secondResponse.json()).school, "Bacarra CES");
 
+    for (let index = 0; index < 48; index += 1) {
+        const response = await fetch(`${baseUrl}/api/submissions`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(makeSubmission({
+                SubmissionId: `00000000-0000-4000-8000-${String(index).padStart(12, "0")}`
+            }))
+        });
+        assert.equal(response.status, 201);
+    }
+
     const schoolsResponse = await fetch(`${baseUrl}/api/schools`);
-    assert.deepEqual(await schoolsResponse.json(), ["Old School", "Bacarra CES"]);
+    assert.deepEqual(await schoolsResponse.json(), ["Bacarra CES"]);
 
     const schoolDataResponse = await fetch(
         `${baseUrl}/api/school-submissions?school=bacarra%20ces`
     );
     const schoolData = await schoolDataResponse.json();
     assert.equal(schoolDataResponse.status, 200);
-    assert.equal(schoolData.length, 2);
+    assert.equal(schoolData.length, 50);
     assert.equal(schoolData[0].School, "Bacarra CES");
     assert.equal(schoolData[0].GPA, 3.25);
     assert.equal("SubmissionId" in schoolData[0], false);
@@ -174,7 +228,7 @@ test("responses append, reuse school spelling, and ignore retry duplicates", asy
     const workbook = new ExcelJS.Workbook();
     await workbook.xlsx.readFile(excelFile);
     const worksheet = workbook.getWorksheet("Submissions");
-    assert.equal(worksheet.rowCount, 4);
+    assert.equal(worksheet.rowCount, 52);
     assert.equal(worksheet.getCell(2, 2).value, "Old School");
     assert.equal(worksheet.getCell(3, 2).value, "Bacarra CES");
     assert.equal(worksheet.getCell(3, 3).value, 3.25);
@@ -196,6 +250,26 @@ test("the website is served but the private submissions file is not", async () =
         "/Codes/Template/index.html"
     );
 
+    const approvedListResponse = await fetch(
+        `${baseUrl}/Codes/Js/approved-schools.json`
+    );
+    assert.equal(approvedListResponse.status, 200);
+    assert.match(
+        approvedListResponse.headers.get("content-type"),
+        /application\/json/u
+    );
+    const approvedNames = await approvedListResponse.json();
+    assert.ok(approvedNames.includes("Bacarra CES"));
+    assert.ok(approvedNames.includes("St. Lawrence University"));
+
+    const submissionScriptResponse = await fetch(
+        `${baseUrl}/Codes/Js/schoolSubmission.js`
+    );
+    assert.equal(submissionScriptResponse.status, 200);
+    const submissionScript = await submissionScriptResponse.text();
+    assert.match(submissionScript, /\/Codes\/Js\/approved-schools\.json/u);
+    assert.doesNotMatch(submissionScript, /\/api\/approved-schools/u);
+
     const pageResponse = await fetch(`${baseUrl}/Codes/Template/submission.html`);
     assert.equal(pageResponse.status, 200);
     const page = await pageResponse.text();
@@ -211,8 +285,10 @@ test("the website is served but the private submissions file is not", async () =
     const findings = await findingsPage.text();
     assert.match(findings, /id="findings"/u);
     assert.match(findings, /id="schoolFindingsSchools"/u);
-    assert.match(findings, /id="schoolSleepMeasure"/u);
-    assert.match(findings, /id="schoolScatterChart"/u);
+    assert.match(findings, /id="schoolFindingsSchoolOptions"/u);
+    assert.match(findings, /Choose a school to filter these findings/u);
+    assert.match(findings, /id="scatterChart"/u);
+    assert.doesNotMatch(findings, /schoolScatterChart/u);
 
     const comparisonPage = await fetch(`${baseUrl}/Codes/Template/comparison.html`);
     assert.equal(comparisonPage.status, 200);

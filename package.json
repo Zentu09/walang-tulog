@@ -1,11 +1,11 @@
 {
   "scripts": {
     "start": "node server.js",
-    "test": "node --test"
+    "test": "node --test",
+    "extract-schools": "node scripts/extract-approved-schools.js"
   },
   "dependencies": {
     "chart.js": "^4.5.1",
-    "exceljs": "^4.4.0",
-    "pdfjs-dist": "^4.10.38"
+    "exceljs": "^4.4.0"
   }
 }
