@@ -86,8 +86,12 @@ test("the server validates required fields and consent", () => {
         /GPA must be a number/u
     );
     assert.throws(
-        () => validateSubmission(makeSubmission({ PoorSleepQuality: -1 })),
-        /non-negative whole-number score/u
+        () => validateSubmission(makeSubmission({ PoorSleepQuality: 0 })),
+        /whole-number score from 1 to 15/u
+    );
+    assert.throws(
+        () => validateSubmission(makeSubmission({ PoorSleepQuality: 16 })),
+        /whole-number score from 1 to 15/u
     );
 });
 

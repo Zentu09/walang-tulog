@@ -164,8 +164,8 @@ function validateSubmission(data) {
         }
     }
 
-    if (!Number.isSafeInteger(data.PoorSleepQuality) || data.PoorSleepQuality < 0) {
-        throw new Error("Poor sleep quality must be a non-negative whole-number score.");
+    if (!Number.isSafeInteger(data.PoorSleepQuality) || data.PoorSleepQuality < 1 || data.PoorSleepQuality > 15) {
+        throw new Error("Poor sleep quality must be a whole-number score from 1 to 15.");
     }
     if (data.LarkOwl !== "Lark" && data.LarkOwl !== "Owl" &&
         data.LarkOwl !== "Neither") {
